@@ -1,24 +1,26 @@
-import logo from './logo.svg';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import HomePage from './components/HomePage';
+import GamingPage from './components/GamingPage';
+import RetroPage from './components/RetroPage';
+import TcgPage from './components/TcgPage';
+import GoodiesPage from './components/GoodiesPage';
 import './App.css';
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <div className="app">
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/gaming" element={<GamingPage />} />
+          <Route path="/retro" element={<RetroPage />} />
+          <Route path="/tcg" element={<TcgPage />} />
+          <Route path="/goodies" element={<GoodiesPage />} />
+          <Route path="*" element={<HomePage />} />
+        </Routes>
+      </div>
+    </Router>
   );
 }
 
