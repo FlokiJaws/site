@@ -34,7 +34,7 @@ const Navbar = () => {
           <Link to="/cart" className="account-icon" style={{ marginRight: '12px' }}>
             <ShoppingCart size={22} color="#6200ea" />
           </Link>
-          <Link to="/account" className="account-icon">
+          <Link to="/login" className="account-icon">
             <User size={22} color="#6200ea" />
           </Link>
         </div>
