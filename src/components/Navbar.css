@@ -107,6 +107,62 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
+/* Account dropdown styles */
+.account-dropdown {
+  position: relative;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 45px;
+  right: 0;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 0.5rem;
+  min-width: 180px;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdown-menu a, .dropdown-menu button {
+  display: block;
+  padding: 0.7rem 1rem;
+  text-decoration: none;
+  color: var(--text-color);
+  transition: all 0.2s ease;
+  border-radius: 4px;
+  font-size: 0.95rem;
+}
+
+.dropdown-menu a:hover, .dropdown-menu button:hover {
+  background-color: rgba(98, 0, 234, 0.08);
+}
+
+.dropdown-menu button {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.dropdown-menu button.logout {
+  color: #f44336;
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
   .navbar-links {
@@ -155,5 +211,9 @@
     position: absolute;
     top: 1rem;
     right: 1rem;
+  }
+  
+  .dropdown-menu {
+    right: -10px;
   }
 }

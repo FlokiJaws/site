@@ -7,9 +7,23 @@ import TcgPage from './components/TcgPage';
 import GoodiesPage from './components/GoodiesPage';
 import LoginPage from './components/LoginPage';
 import RegisterPage from './components/RegisterPage';
+import ProfilePage from './components/ProfilePage';
 import AdminDashboard from './components/admin/AdminDashboard';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import './App.css';
+
+// Composant de protection pour les routes qui nécessitent une authentification
+const ProtectedRoute = ({ children }) => {
+  const { currentUser, loading } = useAuth();
+  
+  if (loading) return <div>Chargement...</div>;
+  
+  if (!currentUser) {
+    return <Navigate to="/login" />;
+  }
+  
+  return children;
+};
 
 // Composant de protection pour les routes admin
 const ProtectedAdminRoute = ({ children }) => {
@@ -37,6 +51,16 @@ function App() {
             <Route path="/goodies" element={<GoodiesPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            
+            {/* Route protégée pour le profil utilisateur */}
+            <Route 
+              path="/profile" 
+              element={
+                <ProtectedRoute>
+                  <ProfilePage />
+                </ProtectedRoute>
+              } 
+            />
             
             {/* Route protégée pour l'administration */}
             <Route 
