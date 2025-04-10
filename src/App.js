@@ -8,6 +8,8 @@ import GoodiesPage from './components/GoodiesPage';
 import LoginPage from './components/LoginPage';
 import RegisterPage from './components/RegisterPage';
 import ProfilePage from './components/ProfilePage';
+import CartPage from './components/CartPage';
+import ProductDetailPage from './components/ProductDetailPage';
 import AdminDashboard from './components/admin/AdminDashboard';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import './App.css';
@@ -51,6 +53,8 @@ function App() {
             <Route path="/goodies" element={<GoodiesPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/cart" element={<CartPage />} />
+            <Route path="/product/:productId" element={<ProductDetailPage />} />
             
             {/* Route protégée pour le profil utilisateur */}
             <Route 

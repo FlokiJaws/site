@@ -40,12 +40,14 @@ const GoodiesPage = () => {
             {products.map(product => (
               <ProductCard 
                 key={product.id}
+                id={product.id}
                 title={product.name}
                 price={product.price}
                 image={product.imageUrls && product.imageUrls.length > 0 
                   ? product.imageUrls[0] 
                   : "/api/placeholder/300/300"}
                 badge={product.badge}
+                stock={product.stock || 0}
               />
             ))}
           </div>

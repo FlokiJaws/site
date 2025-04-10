@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { User, ShoppingCart, LogOut, Settings } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { logoutUser } from '../firebase/auth';
+import { getCartItemCount } from '../firebase/cart';
 import './Navbar.css';
 
 const Navbar = () => {
@@ -10,6 +11,31 @@ const Navbar = () => {
   const navigate = useNavigate();
   const { currentUser, isAdmin } = useAuth();
   const [showDropdown, setShowDropdown] = useState(false);
+  const [cartCount, setCartCount] = useState(0);
+
+  useEffect(() => {
+    const fetchCartCount = async () => {
+      if (currentUser) {
+        try {
+          const result = await getCartItemCount(currentUser.uid);
+          if (result.success) {
+            setCartCount(result.count);
+          }
+        } catch (error) {
+          console.error('Error fetching cart count:', error);
+        }
+      } else {
+        setCartCount(0);
+      }
+    };
+
+    fetchCartCount();
+
+    // Rafraîchir le compteur chaque fois que l'utilisateur visite une page
+    const interval = setInterval(fetchCartCount, 60000); // Rafraîchir toutes les minutes
+
+    return () => clearInterval(interval);
+  }, [currentUser, location.pathname]);
 
   const handleLogout = async () => {
     try {
@@ -45,8 +71,13 @@ const Navbar = () => {
         </div>
         
         <div className="navbar-account">
-          <Link to="/cart" className="account-icon" style={{ marginRight: '12px' }}>
+          <Link to="/cart" className="account-icon" style={{ marginRight: '12px', position: 'relative' }}>
             <ShoppingCart size={22} color="#6200ea" />
+            {cartCount > 0 && (
+              <div className="cart-badge">
+                {cartCount > 9 ? '9+' : cartCount}
+              </div>
+            )}
           </Link>
           
           <div className="account-dropdown" style={{ position: 'relative' }}>
@@ -83,6 +114,17 @@ const Navbar = () => {
                   borderRadius: '4px'
                 }}>
                   Mon profil
+                </Link>
+                
+                <Link to="/cart" style={{
+                  display: 'block',
+                  padding: '0.7rem 1rem',
+                  textDecoration: 'none',
+                  color: 'var(--text-color)',
+                  transition: 'all 0.2s ease',
+                  borderRadius: '4px'
+                }}>
+                  Mon panier
                 </Link>
                 
                 {isAdmin && (

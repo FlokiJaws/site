@@ -267,3 +267,63 @@
     height: 150px;
   }
 }
+
+/* Ajoutez ces styles à la fin de votre fichier HomePage.css */
+
+.product-card {
+  transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), 
+              box-shadow 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.product-stock-info {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 3px;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.product-stock-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.stock-in {
+  background-color: #4caf50;
+}
+
+.stock-low {
+  background-color: #ff9800;
+}
+
+.stock-out {
+  background-color: #f44336;
+}
+
+.add-to-cart {
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* Animations pour les transitions entre pages */
+.page-transition-enter {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.page-transition-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 300ms, transform 300ms cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.page-transition-exit {
+  opacity: 1;
+}
+
+.page-transition-exit-active {
+  opacity: 0;
+  transition: opacity 300ms cubic-bezier(0.25, 0.8, 0.25, 1);
+}
