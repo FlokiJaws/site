@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Upload, X, Save, ArrowLeft } from 'lucide-react';
 import { addProduct, getProductById, updateProduct } from '../../firebase/products';
+import { SUBCATEGORIES } from '../../utils/categories';
 
 const AdminProductForm = () => {
   const { id } = useParams();
@@ -14,7 +15,8 @@ const AdminProductForm = () => {
     description: '',
     stock: '',
     badge: '',
-    categories: []
+    categories: [],
+    subcategories: []
   });
   
   const [images, setImages] = useState([]);
@@ -56,7 +58,8 @@ const AdminProductForm = () => {
             description: product.description || '',
             stock: product.stock || '',
             badge: product.badge || '',
-            categories: product.categories || []
+            categories: product.categories || [],
+            subcategories: product.subcategories || []
           });
           
           // Récupérer les images existantes
@@ -91,7 +94,33 @@ const AdminProductForm = () => {
     } else {
       setFormData({
         ...formData,
-        categories: formData.categories.filter(category => category !== value)
+        categories: formData.categories.filter(category => category !== value),
+        // Supprimer également les sous-catégories associées à cette catégorie
+        subcategories: formData.subcategories.filter(subcatId => {
+          // Pour chaque sous-catégorie, vérifier si elle appartient à la catégorie supprimée
+          const belongsToCategory = Object.keys(SUBCATEGORIES).some(catType => {
+            if (catType === value) {
+              return SUBCATEGORIES[catType].some(subcat => subcat.id === subcatId);
+            }
+            return false;
+          });
+          return !belongsToCategory;
+        })
+      });
+    }
+  };
+
+  const handleSubcategoryChange = (e) => {
+    const { value, checked } = e.target;
+    if (checked) {
+      setFormData({
+        ...formData,
+        subcategories: [...formData.subcategories, value]
+      });
+    } else {
+      setFormData({
+        ...formData,
+        subcategories: formData.subcategories.filter(subcatId => subcatId !== value)
       });
     }
   };
@@ -147,7 +176,8 @@ const AdminProductForm = () => {
         description: formData.description,
         stock: parseInt(formData.stock) || 0,
         badge: formData.badge,
-        categories: formData.categories
+        categories: formData.categories,
+        subcategories: formData.subcategories
       };
       
       let result;
@@ -177,6 +207,32 @@ const AdminProductForm = () => {
   if (loading && isEditMode) {
     return <div>Chargement du produit...</div>;
   }
+
+  // Fonction pour générer les cases à cocher des sous-catégories
+  const renderSubcategories = (categoryType) => {
+    if (!SUBCATEGORIES[categoryType]) return null;
+    
+    return (
+      <div className="admin-subcategory-section" key={categoryType}>
+        <h4 className="subcategory-title">{categoryType.charAt(0).toUpperCase() + categoryType.slice(1)}</h4>
+        <div className="admin-subcategory-checkboxes">
+          {SUBCATEGORIES[categoryType].map(subcategory => (
+            <div key={subcategory.id} className="admin-category-checkbox">
+              <input
+                type="checkbox"
+                id={`subcategory-${subcategory.id}`}
+                value={subcategory.id}
+                checked={formData.subcategories.includes(subcategory.id)}
+                onChange={handleSubcategoryChange}
+                disabled={!formData.categories.includes(categoryType)}
+              />
+              <label htmlFor={`subcategory-${subcategory.id}`}>{subcategory.name}</label>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div>
@@ -266,7 +322,7 @@ const AdminProductForm = () => {
           </div>
           
           <div className="admin-form-group">
-            <label>Catégories *</label>
+            <label>Catégories principales *</label>
             <div className="admin-category-checkboxes">
               {categoryOptions.map(option => (
                 <div key={option.value} className="admin-category-checkbox">
@@ -280,6 +336,19 @@ const AdminProductForm = () => {
                   <label htmlFor={`category-${option.value}`}>{option.label}</label>
                 </div>
               ))}
+            </div>
+          </div>
+          
+          {/* Section des sous-catégories */}
+          <div className="admin-form-group">
+            <label>Sous-catégories</label>
+            <p className="subcategory-help">Sélectionnez d'abord une catégorie principale pour voir ses sous-catégories</p>
+            
+            <div className="admin-subcategories-container">
+              {formData.categories.map(category => {
+                if (category === 'home') return null; // La page d'accueil n'a pas de sous-catégories
+                return renderSubcategories(category);
+              })}
             </div>
           </div>
           

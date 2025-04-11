@@ -1,17 +1,30 @@
-import React, { useState } from 'react';
-import { Routes, Route, Link, useNavigate } from 'react-router-dom';
-import { Settings, ShoppingBag, Users, PlusCircle, LogOut, BarChart } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Settings, ShoppingBag, Users, PlusCircle, LogOut, BarChart, Home } from 'lucide-react';
 import { logoutUser } from '../../firebase/auth';
 import AdminProductList from './AdminProductList';
 import AdminProductForm from './AdminProductForm';
 import AdminOrderList from './AdminOrderList';
 import AdminStats from './AdminStats';
+import AdminSettings from './AdminSettings';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
-  const [activePage, setActivePage] = useState('products');
+  const location = useLocation();
   const navigate = useNavigate();
-
+  const path = location.pathname;
+  
+  // Déterminer le contenu à afficher en fonction de l'URL
+  const renderContent = () => {
+    if (path.includes('/admin/products')) return <AdminProductList />;
+    if (path.includes('/admin/add-product')) return <AdminProductForm />;
+    if (path.includes('/admin/edit-product/')) return <AdminProductForm />;
+    if (path.includes('/admin/orders')) return <AdminOrderList />;
+    if (path.includes('/admin/settings')) return <AdminSettings />;
+    // Par défaut, afficher les statistiques
+    return <AdminStats />;
+  }
+  
   const handleLogout = async () => {
     await logoutUser();
     navigate('/login');
@@ -21,46 +34,47 @@ const AdminDashboard = () => {
     <div className="admin-dashboard">
       <div className="admin-sidebar">
         <div className="admin-logo">
-          <h2>GameCash</h2>
-          <p>Administration</p>
+          <Link to="/" className="admin-home-link">
+            <h2>GameCash</h2>
+            <p>Administration</p>
+            <div className="back-to-site">
+              <Home size={16} />
+              <span>Retour au site</span>
+            </div>
+          </Link>
         </div>
         <div className="admin-menu">
           <Link 
             to="/admin"
-            className={`admin-menu-item ${activePage === 'stats' ? 'active' : ''}`}
-            onClick={() => setActivePage('stats')}
+            className={`admin-menu-item ${path === '/admin' ? 'active' : ''}`}
           >
             <BarChart size={20} />
             <span>Statistiques</span>
           </Link>
           <Link 
             to="/admin/products"
-            className={`admin-menu-item ${activePage === 'products' ? 'active' : ''}`}
-            onClick={() => setActivePage('products')}
+            className={`admin-menu-item ${path === '/admin/products' ? 'active' : ''}`}
           >
             <ShoppingBag size={20} />
             <span>Produits</span>
           </Link>
           <Link 
             to="/admin/add-product"
-            className={`admin-menu-item ${activePage === 'add-product' ? 'active' : ''}`}
-            onClick={() => setActivePage('add-product')}
+            className={`admin-menu-item ${path === '/admin/add-product' ? 'active' : ''}`}
           >
             <PlusCircle size={20} />
             <span>Ajouter un produit</span>
           </Link>
           <Link 
             to="/admin/orders"
-            className={`admin-menu-item ${activePage === 'orders' ? 'active' : ''}`}
-            onClick={() => setActivePage('orders')}
+            className={`admin-menu-item ${path === '/admin/orders' ? 'active' : ''}`}
           >
             <Users size={20} />
             <span>Commandes</span>
           </Link>
           <Link 
             to="/admin/settings"
-            className={`admin-menu-item ${activePage === 'settings' ? 'active' : ''}`}
-            onClick={() => setActivePage('settings')}
+            className={`admin-menu-item ${path === '/admin/settings' ? 'active' : ''}`}
           >
             <Settings size={20} />
             <span>Paramètres</span>
@@ -75,14 +89,7 @@ const AdminDashboard = () => {
         </div>
       </div>
       <div className="admin-content">
-        <Routes>
-          <Route path="/" element={<AdminStats />} />
-          <Route path="/products" element={<AdminProductList />} />
-          <Route path="/add-product" element={<AdminProductForm />} />
-          <Route path="/edit-product/:id" element={<AdminProductForm />} />
-          <Route path="/orders" element={<AdminOrderList />} />
-          <Route path="/settings" element={<div>Paramètres</div>} />
-        </Routes>
+        {renderContent()}
       </div>
     </div>
   );

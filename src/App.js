@@ -8,10 +8,13 @@ import GoodiesPage from './components/GoodiesPage';
 import LoginPage from './components/LoginPage';
 import RegisterPage from './components/RegisterPage';
 import ProfilePage from './components/ProfilePage';
+import UserSettings from './components/UserSettings';
+import OrderHistory from './components/OrderHistory';
 import CartPage from './components/CartPage';
 import ProductDetailPage from './components/ProductDetailPage';
 import AdminDashboard from './components/admin/AdminDashboard';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import CategoryPage from './components/CategoryPage';
 import './App.css';
 
 // Composant de protection pour les routes qui nécessitent une authentification
@@ -47,16 +50,29 @@ function App() {
         <div className="app">
           <Routes>
             <Route path="/" element={<HomePage />} />
+            
+            {/* Catégorie Gaming */}
             <Route path="/gaming" element={<GamingPage />} />
+            <Route path="/gaming/:subcategoryId" element={<CategoryPage categoryType="gaming" />} />
+            
+            {/* Catégorie Retro */}
             <Route path="/retro" element={<RetroPage />} />
+            <Route path="/retro/:subcategoryId" element={<CategoryPage categoryType="retro" />} />
+            
+            {/* Catégorie TCG */}
             <Route path="/tcg" element={<TcgPage />} />
+            <Route path="/tcg/:subcategoryId" element={<CategoryPage categoryType="tcg" />} />
+            
+            {/* Catégorie Goodies */}
             <Route path="/goodies" element={<GoodiesPage />} />
+            <Route path="/goodies/:subcategoryId" element={<CategoryPage categoryType="goodies" />} />
+            
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/cart" element={<CartPage />} />
             <Route path="/product/:productId" element={<ProductDetailPage />} />
             
-            {/* Route protégée pour le profil utilisateur */}
+            {/* Routes protégées pour l'utilisateur */}
             <Route 
               path="/profile" 
               element={
@@ -65,16 +81,30 @@ function App() {
                 </ProtectedRoute>
               } 
             />
-            
-            {/* Route protégée pour l'administration */}
             <Route 
-              path="/admin/*" 
+              path="/settings" 
               element={
-                <ProtectedAdminRoute>
-                  <AdminDashboard />
-                </ProtectedAdminRoute>
+                <ProtectedRoute>
+                  <UserSettings />
+                </ProtectedRoute>
               } 
             />
+            <Route 
+              path="/orders" 
+              element={
+                <ProtectedRoute>
+                  <OrderHistory />
+                </ProtectedRoute>
+              } 
+            />
+            
+            {/* Routes protégées pour l'administration */}
+            <Route path="/admin" element={<ProtectedAdminRoute><AdminDashboard /></ProtectedAdminRoute>} />
+            <Route path="/admin/products" element={<ProtectedAdminRoute><AdminDashboard /></ProtectedAdminRoute>} />
+            <Route path="/admin/add-product" element={<ProtectedAdminRoute><AdminDashboard /></ProtectedAdminRoute>} />
+            <Route path="/admin/edit-product/:id" element={<ProtectedAdminRoute><AdminDashboard /></ProtectedAdminRoute>} />
+            <Route path="/admin/orders" element={<ProtectedAdminRoute><AdminDashboard /></ProtectedAdminRoute>} />
+            <Route path="/admin/settings" element={<ProtectedAdminRoute><AdminDashboard /></ProtectedAdminRoute>} />
             
             <Route path="*" element={<HomePage />} />
           </Routes>

@@ -3,7 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import Navbar from './Navbar';
 import { useAuth } from '../contexts/AuthContext';
 import { getUserCart, updateCartItemQuantity, removeFromCart, clearCart } from '../firebase/cart';
-import { ShoppingCart, ArrowLeft, Trash2, Plus, Minus } from 'lucide-react';
+import { createOrder } from '../firebase/checkout';
+import { ShoppingCart, ArrowLeft, Trash2, Plus, Minus, CreditCard, Check } from 'lucide-react';
 import './CartPage.css';
 
 const CartPage = () => {
@@ -12,6 +13,9 @@ const CartPage = () => {
   const [cart, setCart] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [checkoutSuccess, setCheckoutSuccess] = useState(false);
+  const [orderId, setOrderId] = useState(null);
 
   useEffect(() => {
     const fetchCart = async () => {
@@ -115,6 +119,51 @@ const CartPage = () => {
     }
   };
 
+  const handleCheckout = async () => {
+    if (!currentUser || !cart || cart.items.length === 0) return;
+    
+    setIsCheckingOut(true);
+    setError('');
+    
+    try {
+      // Pour la simulation, on utilise une adresse factice
+      const userAddress = {
+        name: currentUser.displayName || 'Client',
+        email: currentUser.email,
+        address: '123 Rue de la Simulation',
+        city: 'Ville Factice',
+        postalCode: '75000',
+        country: 'France'
+      };
+      
+      const result = await createOrder(currentUser.uid, cart, userAddress);
+      
+      if (result.success) {
+        setCheckoutSuccess(true);
+        setOrderId(result.orderId);
+        
+        // Réinitialiser le panier localement
+        setCart({
+          ...cart,
+          items: [],
+          totalItems: 0,
+          totalPrice: 0
+        });
+        
+        // Rediriger vers la page de succès après 3 secondes
+        setTimeout(() => {
+          navigate('/profile');
+        }, 3000);
+      } else {
+        setError(result.error || "Erreur lors de la finalisation de la commande");
+      }
+    } catch (error) {
+      setError("Une erreur s'est produite lors de la finalisation de la commande");
+    }
+    
+    setIsCheckingOut(false);
+  };
+
   if (!currentUser) {
     return (
       <div className="cart-page">
@@ -170,6 +219,36 @@ const CartPage = () => {
     );
   }
 
+  if (checkoutSuccess) {
+    return (
+      <div className="cart-page">
+        <Navbar />
+        <div className="cart-container">
+          <div className="cart-header">
+            <h1>Commande confirmée</h1>
+          </div>
+          <div className="cart-success">
+            <div className="success-icon">
+              <Check size={80} color="#4caf50" />
+            </div>
+            <h2>Merci pour votre commande !</h2>
+            <p>Votre commande a été confirmée et sera bientôt préparée.</p>
+            <p className="order-id">Numéro de commande : {orderId}</p>
+            <p>Vous allez être redirigé vers votre profil dans quelques secondes...</p>
+            <div className="success-actions">
+              <Link to="/" className="continue-shopping-button">
+                Continuer mes achats
+              </Link>
+              <Link to="/profile" className="view-order-button">
+                Voir mes commandes
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (!cart || !cart.items || cart.items.length === 0) {
     return (
       <div className="cart-page">
@@ -203,7 +282,7 @@ const CartPage = () => {
         </div>
         
         {error && (
-          <div style={{ color: 'red', marginBottom: '1rem', textAlign: 'center' }}>
+          <div style={{ color: 'red', marginBottom: '1rem', textAlign: 'center', padding: '1rem', backgroundColor: 'rgba(255, 0, 0, 0.1)', borderRadius: '8px' }}>
             {error}
           </div>
         )}
@@ -269,9 +348,24 @@ const CartPage = () => {
             <div className="summary-total-value">{cart.totalPrice?.toFixed(2)} €</div>
           </div>
           
-          <button className="checkout-button">
-            Passer à la caisse
+          <button 
+            className="checkout-button"
+            onClick={handleCheckout}
+            disabled={isCheckingOut}
+          >
+            {isCheckingOut ? (
+              'Traitement en cours...'
+            ) : (
+              <>
+                <CreditCard size={18} style={{ marginRight: '0.5rem' }} />
+                Finaliser la commande (simulation)
+              </>
+            )}
           </button>
+          
+          <p className="simulation-note">
+            Ceci est une simulation de paiement. Aucune carte bancaire ne sera débitée.
+          </p>
         </div>
         
         <div className="cart-actions">

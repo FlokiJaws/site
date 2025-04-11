@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { getAllProducts } from '../../firebase/products';
 import { getAllOrders } from '../../firebase/orders';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { db } from '../../firebase/config';
 import { BarChart2, ShoppingBag, DollarSign, Users, TrendingUp } from 'lucide-react';
 
 const AdminStats = () => {
@@ -11,6 +13,9 @@ const AdminStats = () => {
   
   const [orderStats, setOrderStats] = useState({
     total: 0,
+    active: 0,
+    completed: 0,
+    cancelled: 0,
     totalRevenue: 0,
     byStatus: {}
   });
@@ -46,18 +51,41 @@ const AdminStats = () => {
           
           // Statistiques des commandes
           let totalRevenue = 0;
+          let activeCount = 0;
+          let completedCount = 0;
+          let cancelledCount = 0;
           const statusCounts = {};
           
           orders.forEach(order => {
-            totalRevenue += order.totalPrice || 0;
+            // Ne compter les revenus que pour les commandes non annulées
+            if (order.status !== 'cancelled') {
+              totalRevenue += order.totalPrice || 0;
+            }
+            
+            // Compter par statut
             statusCounts[order.status] = (statusCounts[order.status] || 0) + 1;
+            
+            // Compter par catégorie
+            if (order.status === 'cancelled') {
+              cancelledCount++;
+            } else if (order.status === 'delivered') {
+              completedCount++;
+            } else {
+              activeCount++;
+            }
           });
           
           setOrderStats({
             total: orders.length,
+            active: activeCount,
+            completed: completedCount,
+            cancelled: cancelledCount,
             totalRevenue,
             byStatus: statusCounts
           });
+          
+          // Mettre à jour les statistiques dans Firestore pour référence future
+          await updateStatsInFirestore(totalRevenue, orders.length);
         }
       } catch (error) {
         console.error('Erreur lors de la récupération des statistiques:', error);
@@ -68,6 +96,27 @@ const AdminStats = () => {
     
     fetchStats();
   }, []);
+
+  // Mettre à jour les statistiques dans Firestore
+  const updateStatsInFirestore = async (totalRevenue, totalOrders) => {
+    try {
+      const statsRef = doc(db, 'stats', 'sales');
+      const statsDoc = await getDoc(statsRef);
+      
+      if (!statsDoc.exists()) {
+        // Créer le document s'il n'existe pas
+        await setDoc(statsRef, {
+          totalRevenue,
+          totalOrders,
+          updatedAt: new Date()
+        });
+      }
+      // Nous ne mettons pas à jour s'il existe déjà, car les mises à jour
+      // sont gérées par les incréments lors des changements de statut
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour des statistiques dans Firestore:', error);
+    }
+  };
 
   if (loading) {
     return <div>Chargement des statistiques...</div>;
@@ -91,6 +140,11 @@ const AdminStats = () => {
           <Users size={40} style={{ color: 'var(--secondary-color)', margin: '0 auto 1rem' }} />
           <h2 style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>{orderStats.total}</h2>
           <p style={{ color: '#666' }}>Commandes</p>
+          <div style={{ fontSize: '0.9rem', color: '#888', marginTop: '0.5rem' }}>
+            <span style={{ color: '#2196f3', marginRight: '0.8rem' }}>{orderStats.active} actives</span>
+            <span style={{ color: '#4caf50', marginRight: '0.8rem' }}>{orderStats.completed} livrées</span>
+            <span style={{ color: '#f44336' }}>{orderStats.cancelled} annulées</span>
+          </div>
         </div>
         
         <div className="admin-card" style={{ textAlign: 'center' }}>
@@ -99,12 +153,17 @@ const AdminStats = () => {
             {orderStats.totalRevenue.toFixed(2)} €
           </h2>
           <p style={{ color: '#666' }}>Chiffre d'affaires</p>
+          <p style={{ fontSize: '0.9rem', color: '#888', marginTop: '0.5rem' }}>
+            (hors commandes annulées)
+          </p>
         </div>
         
         <div className="admin-card" style={{ textAlign: 'center' }}>
           <TrendingUp size={40} style={{ color: '#f44336', margin: '0 auto 1rem' }} />
           <h2 style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>
-            {((orderStats.total / (productStats.total || 1)) * 100).toFixed(0)}%
+            {orderStats.active + orderStats.completed > 0 
+              ? (((orderStats.active + orderStats.completed) / (productStats.total || 1)) * 100).toFixed(0)
+              : 0}%
           </h2>
           <p style={{ color: '#666' }}>Taux de conversion</p>
         </div>
@@ -165,7 +224,7 @@ const AdminStats = () => {
         </h2>
         
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem' }}>
-          {Object.entries(orderStats.byStatus).map(([status, count]) => {
+          {Object.entries(orderStats.byStatus || {}).map(([status, count]) => {
             // Mapper les status techniques aux noms affichés
             const statusNames = {
               'pending': 'En attente',
@@ -193,7 +252,7 @@ const AdminStats = () => {
               <div key={status} style={{ flex: '1 0 200px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.3rem' }}>
                   <span>{displayName}</span>
-                  <span>{count} commandes ({percentage.toFixed(1)}%)</span>
+                  <span>{count} commande{count > 1 ? 's' : ''} ({percentage.toFixed(1)}%)</span>
                 </div>
                 <div style={{ 
                   width: '100%', 
