@@ -27,6 +27,34 @@
   max-width: 800px;
 }
 
+/* Styles pour le fil d'Ariane */
+.category-breadcrumb {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+}
+
+.breadcrumb-link {
+  color: var(--primary-color);
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.breadcrumb-link:hover {
+  text-decoration: underline;
+}
+
+.breadcrumb-separator {
+  margin: 0 0.5rem;
+  color: #999;
+}
+
+.breadcrumb-current {
+  color: #666;
+  font-weight: 500;
+}
+
 /* Styles pour la liste des sous-catégories */
 .subcategories-list {
   display: flex;
@@ -100,6 +128,14 @@
   .subcategory-link {
     width: 100%;
     text-align: center;
+  }
+  
+  .category-content h1 {
+    font-size: 1.8rem;
+  }
+  
+  .category-content p {
+    font-size: 1rem;
   }
 }
 
@@ -227,10 +263,6 @@
     padding: 1.5rem;
   }
   
-  .category-content h1 {
-    font-size: 2rem;
-  }
-  
   .products-grid {
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 1.5rem;
@@ -240,14 +272,6 @@
 @media (max-width: 576px) {
   .category-content {
     padding: 1rem;
-  }
-  
-  .category-content h1 {
-    font-size: 1.8rem;
-  }
-  
-  .category-content p {
-    font-size: 1rem;
   }
   
   .products-grid {

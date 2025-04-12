@@ -17,6 +17,7 @@ import {
   deleteObject 
 } from 'firebase/storage';
 import { db, storage } from './config';
+import { getParentSubcategory } from '../utils/categories';
 
 // Ajouter un nouveau produit
 export const addProduct = async (productData, images) => {
@@ -98,19 +99,40 @@ export const getProductsByCategory = async (category) => {
 // Récupérer les produits par sous-catégorie
 export const getProductsBySubcategory = async (categoryType, subcategoryId) => {
   try {
-    // D'abord récupérer tous les produits de la catégorie principale
-    const { success, products, error } = await getProductsByCategory(categoryType);
+    // Vérifier si c'est une sous-sous-catégorie (pour TCG)
+    const parentCategory = getParentSubcategory(categoryType, subcategoryId);
     
-    if (!success) {
-      return { success: false, error };
+    // Si c'est une sous-sous-catégorie, nous devons d'abord récupérer tous les produits de la catégorie principale
+    if (parentCategory) {
+      // D'abord récupérer tous les produits de la catégorie principale
+      const { success, products, error } = await getProductsByCategory(categoryType);
+      
+      if (!success) {
+        return { success: false, error };
+      }
+      
+      // Filtrer les produits qui ont cette sous-sous-catégorie
+      const filteredProducts = products.filter(product => 
+        product.subcategories && product.subcategories.includes(subcategoryId)
+      );
+      
+      return { success: true, products: filteredProducts };
+    } else {
+      // Sinon, c'est une sous-catégorie régulière
+      // D'abord récupérer tous les produits de la catégorie principale
+      const { success, products, error } = await getProductsByCategory(categoryType);
+      
+      if (!success) {
+        return { success: false, error };
+      }
+      
+      // Ensuite filtrer par sous-catégorie
+      const filteredProducts = products.filter(product => 
+        product.subcategories && product.subcategories.includes(subcategoryId)
+      );
+      
+      return { success: true, products: filteredProducts };
     }
-    
-    // Ensuite filtrer par sous-catégorie
-    const filteredProducts = products.filter(product => 
-      product.subcategories && product.subcategories.includes(subcategoryId)
-    );
-    
-    return { success: true, products: filteredProducts };
   } catch (error) {
     console.error("Erreur lors de la récupération des produits par sous-catégorie:", error);
     return { success: false, error: error.message };

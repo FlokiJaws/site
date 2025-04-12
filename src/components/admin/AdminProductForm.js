@@ -98,12 +98,23 @@ const AdminProductForm = () => {
         // Supprimer également les sous-catégories associées à cette catégorie
         subcategories: formData.subcategories.filter(subcatId => {
           // Pour chaque sous-catégorie, vérifier si elle appartient à la catégorie supprimée
-          const belongsToCategory = Object.keys(SUBCATEGORIES).some(catType => {
-            if (catType === value) {
-              return SUBCATEGORIES[catType].some(subcat => subcat.id === subcatId);
+          // Ou si c'est une sous-sous-catégorie appartenant à une sous-catégorie de la catégorie supprimée
+          let belongsToCategory = false;
+          
+          // Vérifier les sous-catégories directes
+          if (SUBCATEGORIES[value]) {
+            belongsToCategory = SUBCATEGORIES[value].some(subcat => subcat.id === subcatId);
+            
+            // Vérifier les sous-sous-catégories
+            if (!belongsToCategory) {
+              SUBCATEGORIES[value].forEach(mainSubcat => {
+                if (mainSubcat.subCategories) {
+                  belongsToCategory = belongsToCategory || mainSubcat.subCategories.some(nestedSub => nestedSub.id === subcatId);
+                }
+              });
             }
-            return false;
-          });
+          }
+          
           return !belongsToCategory;
         })
       });
@@ -118,10 +129,28 @@ const AdminProductForm = () => {
         subcategories: [...formData.subcategories, value]
       });
     } else {
-      setFormData({
-        ...formData,
-        subcategories: formData.subcategories.filter(subcatId => subcatId !== value)
-      });
+      // Supprimer la sous-catégorie et toutes ses sous-sous-catégories si elle en a
+      const categoryWithSubcats = Object.values(SUBCATEGORIES)
+        .flatMap(cats => cats)
+        .find(cat => cat.id === value && cat.subCategories);
+        
+      if (categoryWithSubcats && categoryWithSubcats.subCategories) {
+        // C'est une sous-catégorie principale avec des sous-sous-catégories
+        const nestedSubcatIds = categoryWithSubcats.subCategories.map(sub => sub.id);
+        
+        setFormData({
+          ...formData,
+          subcategories: formData.subcategories.filter(
+            subcatId => subcatId !== value && !nestedSubcatIds.includes(subcatId)
+          )
+        });
+      } else {
+        // C'est une sous-catégorie simple ou une sous-sous-catégorie
+        setFormData({
+          ...formData,
+          subcategories: formData.subcategories.filter(subcatId => subcatId !== value)
+        });
+      }
     }
   };
 
@@ -216,19 +245,51 @@ const AdminProductForm = () => {
       <div className="admin-subcategory-section" key={categoryType}>
         <h4 className="subcategory-title">{categoryType.charAt(0).toUpperCase() + categoryType.slice(1)}</h4>
         <div className="admin-subcategory-checkboxes">
-          {SUBCATEGORIES[categoryType].map(subcategory => (
-            <div key={subcategory.id} className="admin-category-checkbox">
-              <input
-                type="checkbox"
-                id={`subcategory-${subcategory.id}`}
-                value={subcategory.id}
-                checked={formData.subcategories.includes(subcategory.id)}
-                onChange={handleSubcategoryChange}
-                disabled={!formData.categories.includes(categoryType)}
-              />
-              <label htmlFor={`subcategory-${subcategory.id}`}>{subcategory.name}</label>
-            </div>
-          ))}
+          {SUBCATEGORIES[categoryType].map(subcategory => {
+            const isMainSubcat = subcategory.subCategories && subcategory.subCategories.length > 0;
+            
+            return (
+              <div key={subcategory.id} className="admin-category-checkbox">
+                <input
+                  type="checkbox"
+                  id={`subcategory-${subcategory.id}`}
+                  value={subcategory.id}
+                  checked={formData.subcategories.includes(subcategory.id)}
+                  onChange={handleSubcategoryChange}
+                  disabled={!formData.categories.includes(categoryType)}
+                />
+                <label htmlFor={`subcategory-${subcategory.id}`}>
+                  {subcategory.name}
+                  {isMainSubcat && ' *'}
+                </label>
+                
+                {/* Afficher les sous-sous-catégories (pour TCG) */}
+                {isMainSubcat && formData.subcategories.includes(subcategory.id) && (
+                  <div style={{ marginLeft: '20px', marginTop: '10px' }}>
+                    <div style={{ fontSize: '0.85rem', color: '#666', marginBottom: '5px' }}>
+                      Sous-catégories de {subcategory.name}:
+                    </div>
+                    <div className="admin-subcategory-checkboxes" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)' }}>
+                      {subcategory.subCategories.map(nestedSub => (
+                        <div key={nestedSub.id} className="admin-category-checkbox">
+                          <input
+                            type="checkbox"
+                            id={`subcategory-${nestedSub.id}`}
+                            value={nestedSub.id}
+                            checked={formData.subcategories.includes(nestedSub.id)}
+                            onChange={handleSubcategoryChange}
+                          />
+                          <label htmlFor={`subcategory-${nestedSub.id}`}>
+                            {nestedSub.name}
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
     );
@@ -342,7 +403,10 @@ const AdminProductForm = () => {
           {/* Section des sous-catégories */}
           <div className="admin-form-group">
             <label>Sous-catégories</label>
-            <p className="subcategory-help">Sélectionnez d'abord une catégorie principale pour voir ses sous-catégories</p>
+            <p className="subcategory-help">
+              Sélectionnez d'abord une catégorie principale pour voir ses sous-catégories. 
+              Les entrées marquées d'un astérisque (*) contiennent des sous-catégories supplémentaires.
+            </p>
             
             <div className="admin-subcategories-container">
               {formData.categories.map(category => {

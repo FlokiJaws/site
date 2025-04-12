@@ -1,65 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { User, ShoppingCart, LogOut, Settings, ChevronDown } from 'lucide-react';
+import { User, ShoppingCart, LogOut, Settings, ChevronDown, ChevronRight } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { logoutUser } from '../firebase/auth';
 import { getCartItemCount } from '../firebase/cart';
+import { SUBCATEGORIES } from '../utils/categories';
 import './Navbar.css';
-
-// Structure des sous-catégories
-const SUBCATEGORIES = {
-  gaming: [
-    { id: 'xbox-series-x', name: 'XBOX séries X' },
-    { id: 'playstation-5', name: 'Playstation 5' },
-    { id: 'playstation-4', name: 'Playstation 4' },
-    { id: 'switch', name: 'Switch' },
-    { id: 'xbox-one', name: 'Xbox One' },
-    { id: 'playstation-3', name: 'Playstation 3' },
-    { id: 'xbox-360', name: 'Xbox 360' },
-    { id: 'wii-u', name: 'Wii U' },
-    { id: '3ds', name: '3DS' },
-    { id: 'ds', name: 'DS' },
-    { id: 'playstation-vita', name: 'Playstation Vita' },
-    { id: 'playstation-portable', name: 'Playstation Portable' },
-    { id: 'wii', name: 'Wii' },
-    { id: 'other-gaming', name: 'Autres' },
-  ],
-  retro: [
-    { id: 'super-nintendo', name: 'Super Nintendo' },
-    { id: 'megadrive', name: 'Megadrive' },
-    { id: 'game-boy', name: 'Game Boy' },
-    { id: 'playstation-one', name: 'Playstation One' },
-    { id: 'nes', name: 'NES' },
-    { id: 'playstation-2', name: 'Playstation 2' },
-    { id: 'dreamcast', name: 'Dreamcast' },
-    { id: 'nintendo-64', name: 'Nintendo 64' },
-    { id: 'master-system', name: 'Master System' },
-    { id: 'game-boy-advance', name: 'Game Boy Advance' },
-    { id: 'saturn', name: 'Saturn' },
-    { id: 'neo-geo', name: 'Neo Geo' },
-    { id: 'xbox-original', name: 'Xbox' },
-    { id: 'other-retro', name: 'Autres' },
-  ],
-  tcg: [
-    { id: 'ecarlate-violet', name: 'Série Ecarlate et Violet' },
-    { id: 'epee-bouclier', name: 'Série Epée et Bouclier' },
-    { id: 'soleil-lune', name: 'Série Soleil et Lune' },
-    { id: 'xy', name: 'Série XY' },
-    { id: 'noir-blanc', name: 'Série Noir et Blanc' },
-    { id: 'appel-legendes', name: 'Série L\'appel des légendes' },
-    { id: 'heartgold-soulsilver', name: 'Série HeartGold SoulSilver' },
-    { id: 'platine', name: 'Série Platine' },
-    { id: 'diamant-perle', name: 'Série Diamant et Perle' },
-    { id: 'ex', name: 'Série EX' },
-    { id: 'wizards', name: 'Wizards' },
-    { id: 'other-tcg', name: 'Autres' },
-  ],
-  goodies: [
-    { id: 'funko-pop', name: 'Funko Pop' },
-    { id: 'figurines', name: 'Figurines' },
-    { id: 'other-goodies', name: 'Autres' },
-  ]
-};
 
 const Navbar = () => {
   const location = useLocation();
@@ -67,8 +13,10 @@ const Navbar = () => {
   const { currentUser, isAdmin } = useAuth();
   const [showDropdown, setShowDropdown] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState(null);
+  const [activeTcgSubDropdown, setActiveTcgSubDropdown] = useState(null);
   const [cartCount, setCartCount] = useState(0);
   const dropdownTimeoutRef = useRef(null);
+  const tcgSubDropdownTimeoutRef = useRef(null);
 
   useEffect(() => {
     const fetchCartCount = async () => {
@@ -113,6 +61,20 @@ const Navbar = () => {
   const handleMouseLeave = () => {
     dropdownTimeoutRef.current = setTimeout(() => {
       setActiveDropdown(null);
+      setActiveTcgSubDropdown(null);
+    }, 300);
+  };
+
+  const handleTcgSubMouseEnter = (subcategory) => {
+    if (tcgSubDropdownTimeoutRef.current) {
+      clearTimeout(tcgSubDropdownTimeoutRef.current);
+    }
+    setActiveTcgSubDropdown(subcategory);
+  };
+
+  const handleTcgSubMouseLeave = () => {
+    tcgSubDropdownTimeoutRef.current = setTimeout(() => {
+      setActiveTcgSubDropdown(null);
     }, 300);
   };
 
@@ -170,7 +132,7 @@ const Navbar = () => {
               Retro <ChevronDown size={16} className="dropdown-icon" />
             </Link>
             {activeDropdown === 'retro' && (
-              <div className="dropdown-menu">
+              <div className="dropdown-menu scrollable-dropdown">
                 {SUBCATEGORIES.retro.map(sub => (
                   <Link 
                     key={sub.id} 
@@ -184,7 +146,7 @@ const Navbar = () => {
             )}
           </div>
 
-          {/* TCG avec sous-catégories */}
+          {/* TCG avec sous-catégories et sous-sous-catégories */}
           <div 
             className={`nav-item-dropdown ${isActiveCategory('tcg') ? 'active' : ''}`}
             onMouseEnter={() => handleMouseEnter('tcg')}
@@ -196,13 +158,41 @@ const Navbar = () => {
             {activeDropdown === 'tcg' && (
               <div className="dropdown-menu">
                 {SUBCATEGORIES.tcg.map(sub => (
-                  <Link 
-                    key={sub.id} 
-                    to={`/tcg/${sub.id}`}
-                    className="dropdown-item"
-                  >
-                    {sub.name}
-                  </Link>
+                  <div key={sub.id} className="tcg-dropdown-item">
+                    {sub.subCategories ? (
+                      <div 
+                        className="dropdown-item with-submenu"
+                        onMouseEnter={() => handleTcgSubMouseEnter(sub.id)}
+                        onMouseLeave={handleTcgSubMouseLeave}
+                      >
+                        <Link to={`/tcg/${sub.id}`} className="dropdown-main-link">
+                          {sub.name}
+                        </Link>
+                        <ChevronRight size={14} className="submenu-icon" />
+                        
+                        {activeTcgSubDropdown === sub.id && (
+                          <div className="tcg-submenu">
+                            {sub.subCategories.map(nestedSub => (
+                              <Link 
+                                key={nestedSub.id} 
+                                to={`/tcg/${nestedSub.id}`}
+                                className="dropdown-item"
+                              >
+                                {nestedSub.name}
+                              </Link>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <Link 
+                        to={`/tcg/${sub.id}`}
+                        className="dropdown-item"
+                      >
+                        {sub.name}
+                      </Link>
+                    )}
+                  </div>
                 ))}
               </div>
             )}
