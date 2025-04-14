@@ -25,7 +25,7 @@ const HomePage = () => {
       <Navbar />
       <div className="home-container">
         <div className="hero-section">
-          <h2>Bienvenue sur GameCash</h2>
+          <h2>Bienvenue sur GamerClash</h2>
           <p>Votre destination pour tous les produits gaming, rétro, cartes et goodies</p>
         </div>
         

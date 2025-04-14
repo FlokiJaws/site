@@ -146,12 +146,94 @@ export const SUBCATEGORIES = {
         { id: 'nb-legendes-lumineuses', name: 'Légendes Lumineuses' }
       ]
     },
-    { id: 'appel-legendes', name: 'Série L\'appel des légendes' },
-    { id: 'heartgold-soulsilver', name: 'Série HeartGold SoulSilver' },
-    { id: 'platine', name: 'Série Platine' },
-    { id: 'diamant-perle', name: 'Série Diamant et Perle' },
-    { id: 'ex', name: 'Série EX' },
-    { id: 'wizards', name: 'Wizards' }
+    { 
+      id: 'appel-legendes', 
+      name: 'Série L\'appel des légendes',
+      subCategories: [
+        { id: 'al-set-complet', name: 'Set Complet' },
+        { id: 'al-cartes-rares', name: 'Cartes Rares' },
+        { id: 'al-cartes-holo', name: 'Cartes Holo' },
+        { id: 'al-promo', name: 'Cartes Promo' },
+        { id: 'al-legendaires', name: 'Cartes Légendaires' }
+      ]
+    },
+    { 
+      id: 'heartgold-soulsilver', 
+      name: 'Série HeartGold SoulSilver',
+      subCategories: [
+        { id: 'hgss-base', name: 'Set de Base' },
+        { id: 'hgss-unleashed', name: 'Déchaînement' },
+        { id: 'hgss-undaunted', name: 'Indomptable' },
+        { id: 'hgss-triumphant', name: 'Triomphe' },
+        { id: 'hgss-promo', name: 'Cartes Promo' }
+      ]
+    },
+    { 
+      id: 'platine', 
+      name: 'Série Platine',
+      subCategories: [
+        { id: 'pt-base', name: 'Set de Base' },
+        { id: 'pt-rising-rivals', name: 'Rivaux Émergents' },
+        { id: 'pt-supreme-victors', name: 'Suprêmes Vainqueurs' },
+        { id: 'pt-arceus', name: 'Arceus' },
+        { id: 'pt-promo', name: 'Cartes Promo' }
+      ]
+    },
+    { 
+      id: 'diamant-perle', 
+      name: 'Série Diamant et Perle',
+      subCategories: [
+        { id: 'dp-base', name: 'Set de Base' },
+        { id: 'dp-mysterious-treasures', name: 'Trésors Mystérieux' },
+        { id: 'dp-secret-wonders', name: 'Merveilles Secrètes' },
+        { id: 'dp-great-encounters', name: 'Rencontres Légendaires' },
+        { id: 'dp-majestic-dawn', name: 'Aube Majestueuse' },
+        { id: 'dp-legends-awakened', name: 'Éveil des Légendes' },
+        { id: 'dp-stormfront', name: 'Front Tempête' },
+        { id: 'dp-promo', name: 'Cartes Promo' }
+      ]
+    },
+    { 
+      id: 'ex', 
+      name: 'Série EX',
+      subCategories: [
+        { id: 'ex-ruby-sapphire', name: 'Rubis & Saphir' },
+        { id: 'ex-sandstorm', name: 'Tempête de Sable' },
+        { id: 'ex-dragon', name: 'Dragon' },
+        { id: 'ex-team-magma-vs-aqua', name: 'Team Magma vs Team Aqua' },
+        { id: 'ex-hidden-legends', name: 'Légendes Cachées' },
+        { id: 'ex-firered-leafgreen', name: 'Rouge Feu & Vert Feuille' },
+        { id: 'ex-team-rocket-returns', name: 'Retour de la Team Rocket' },
+        { id: 'ex-deoxys', name: 'Deoxys' },
+        { id: 'ex-emerald', name: 'Émeraude' },
+        { id: 'ex-unseen-forces', name: 'Forces Cachées' },
+        { id: 'ex-delta-species', name: 'Espèces Delta' },
+        { id: 'ex-legend-maker', name: 'Créateur de Légendes' },
+        { id: 'ex-holon-phantoms', name: 'Fantômes de Holon' },
+        { id: 'ex-crystal-guardians', name: 'Gardiens de Cristal' },
+        { id: 'ex-dragon-frontiers', name: 'Frontières Dragon' },
+        { id: 'ex-power-keepers', name: 'Gardiens du Pouvoir' }
+      ]
+    },
+    { 
+      id: 'wizards', 
+      name: 'Wizards',
+      subCategories: [
+        { id: 'wizards-base', name: 'Set de Base' },
+        { id: 'wizards-jungle', name: 'Jungle' },
+        { id: 'wizards-fossil', name: 'Fossile' },
+        { id: 'wizards-base2', name: 'Set de Base 2' },
+        { id: 'wizards-team-rocket', name: 'Team Rocket' },
+        { id: 'wizards-gym-heroes', name: 'Gym Heroes' },
+        { id: 'wizards-gym-challenge', name: 'Gym Challenge' },
+        { id: 'wizards-neo-genesis', name: 'Neo Genesis' },
+        { id: 'wizards-neo-discovery', name: 'Neo Discovery' },
+        { id: 'wizards-neo-revelation', name: 'Neo Revelation' },
+        { id: 'wizards-neo-destiny', name: 'Neo Destiny' },
+        { id: 'wizards-legendary', name: 'Legendary Collection' },
+        { id: 'wizards-promo', name: 'Cartes Promo' }
+      ]
+    }
   ],
   goodies: [
     { id: 'funko-pop', name: 'Funko Pop' },

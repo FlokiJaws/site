@@ -77,13 +77,14 @@
   transform: rotate(180deg);
 }
 
+/* Styles améliorés pour le menu déroulant */
 .dropdown-menu {
   position: absolute;
   top: 100%;
   left: 0;
   background-color: white;
   min-width: 220px;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
   border-radius: 8px;
   overflow: hidden;
   z-index: 1000;
@@ -95,11 +96,42 @@
   animation: fadeInDown 0.3s ease forwards;
 }
 
-/* Style pour les menus déroulants avec défilement */
+/* Spécifique pour le menu TCG */
+.tcg-dropdown-menu {
+  max-height: 70vh;
+  overflow-y: auto;
+  z-index: 1001;
+}
+
+/* Style pour les menus déroulants avec défilement vertical */
 .scrollable-dropdown {
   max-height: 70vh;
   overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary-color) #f0f0f0;
   padding-right: 5px;
+}
+
+/* Styles de la scrollbar personnalisée */
+.scrollable-dropdown::-webkit-scrollbar,
+.tcg-dropdown-menu::-webkit-scrollbar,
+.tcg-submenu::-webkit-scrollbar {
+  width: 8px;
+}
+
+.scrollable-dropdown::-webkit-scrollbar-track,
+.tcg-dropdown-menu::-webkit-scrollbar-track,
+.tcg-submenu::-webkit-scrollbar-track {
+  background: #f0f0f0;
+  border-radius: 10px;
+}
+
+.scrollable-dropdown::-webkit-scrollbar-thumb,
+.tcg-dropdown-menu::-webkit-scrollbar-thumb,
+.tcg-submenu::-webkit-scrollbar-thumb {
+  background-color: var(--primary-color);
+  border-radius: 10px;
+  border: 2px solid #f0f0f0;
 }
 
 @keyframes fadeInDown {
@@ -116,6 +148,7 @@
   text-decoration: none;
   transition: all 0.2s ease;
   font-size: 0.9rem;
+  white-space: nowrap;
 }
 
 .dropdown-item:hover {
@@ -123,7 +156,7 @@
   color: var(--primary-color);
 }
 
-/* Styles pour les sous-sous-menus TCG */
+/* Styles améliorés pour les sous-sous-menus TCG */
 .tcg-dropdown-item {
   position: relative;
 }
@@ -133,6 +166,8 @@
   justify-content: space-between;
   align-items: center;
   padding-right: 0.6rem;
+  cursor: pointer;
+  position: relative;
 }
 
 .dropdown-main-link {
@@ -148,24 +183,31 @@
   transition: transform 0.3s ease;
 }
 
+.dropdown-item.with-submenu:hover {
+  background-color: rgba(98, 0, 234, 0.08);
+}
+
 .dropdown-item.with-submenu:hover .submenu-icon {
   transform: rotate(90deg);
   color: var(--primary-color);
 }
 
+/* Menu TCG corrigé */
 .tcg-submenu {
   position: absolute;
-  top: 0;
+  top: -10px; /* Position légèrement décalée vers le haut */
   left: 100%;
   background-color: white;
-  min-width: 220px;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  min-width: 240px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
   border-radius: 8px;
   overflow: hidden;
-  z-index: 1001;
+  z-index: 1002; /* Z-index plus élevé */
   padding: 0.5rem 0;
-  max-height: 400px;
+  max-height: 500px; /* Hauteur augmentée */
   overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary-color) #f0f0f0;
   animation: fadeInRight 0.3s ease forwards;
 }
 
@@ -261,7 +303,7 @@
   }
   
   .tcg-submenu {
-    min-width: 200px;
+    min-width: 220px;
   }
 }
 
@@ -305,9 +347,17 @@
     right: 0;
   }
   
+  /* Mobile optimisé pour les sous-menus TCG */
   .tcg-submenu {
-    left: auto;
-    right: 100%;
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: auto;
+    bottom: 0;
+    width: 100%;
+    max-height: 50vh;
+    border-radius: 16px 16px 0 0;
+    box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.2);
   }
 }
 
@@ -347,18 +397,6 @@
   
   .user-dropdown-menu {
     right: -10px;
-  }
-  
-  /* Repositionner les sous-sous-menus sur mobile */
-  .tcg-submenu {
-    position: fixed;
-    left: 0;
-    right: 0;
-    top: auto;
-    bottom: 0;
-    width: 100%;
-    max-height: 50vh;
-    border-radius: 16px 16px 0 0;
   }
 }
 

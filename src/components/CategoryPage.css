@@ -11,20 +11,54 @@
   width: 100%;
 }
 
-.category-content h1 {
-  font-size: 2.5rem;
-  color: var(--primary-color);
-  margin-bottom: 1rem;
-  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+/* Nouveau style pour l'en-tête de la page de catégorie inspiré de la page d'accueil */
+.category-hero-section {
+  text-align: center;
+  padding: 2.5rem 1rem;
+  margin-bottom: 2rem;
+  background: var(--gradient-primary);
+  position: relative;
+  overflow: hidden;
+  color: white;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(98, 0, 234, 0.25);
 }
 
-.category-content p {
-  font-size: 1.2rem;
-  margin-bottom: 2rem;
-  color: var(--text-color);
+.category-hero-section::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.03),
+    rgba(255, 255, 255, 0.03) 10px,
+    rgba(255, 255, 255, 0.06) 10px,
+    rgba(255, 255, 255, 0.06) 20px
+  );
+  transform: rotate(30deg);
+  z-index: 0;
+}
+
+.category-hero-section h2 {
+  font-size: 2.2rem;
+  margin-bottom: 0.8rem;
+  font-weight: 700;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  position: relative;
+  z-index: 1;
+}
+
+.category-hero-section p {
+  font-size: 1.1rem;
   max-width: 800px;
+  margin: 0 auto;
+  opacity: 0.95;
+  position: relative;
+  z-index: 1;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 /* Styles pour le fil d'Ariane */
@@ -130,11 +164,11 @@
     text-align: center;
   }
   
-  .category-content h1 {
+  .category-hero-section h2 {
     font-size: 1.8rem;
   }
   
-  .category-content p {
+  .category-hero-section p {
     font-size: 1rem;
   }
 }
@@ -266,6 +300,10 @@
   .products-grid {
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 1.5rem;
+  }
+  
+  .category-hero-section {
+    padding: 1.5rem 1rem;
   }
 }
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { User, ShoppingCart, LogOut, Settings, ChevronDown, ChevronRight } from 'lucide-react';
+import { User, ShoppingCart, LogOut, Settings, ChevronDown } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { logoutUser } from '../firebase/auth';
 import { getCartItemCount } from '../firebase/cart';
@@ -13,10 +13,8 @@ const Navbar = () => {
   const { currentUser, isAdmin } = useAuth();
   const [showDropdown, setShowDropdown] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState(null);
-  const [activeTcgSubDropdown, setActiveTcgSubDropdown] = useState(null);
   const [cartCount, setCartCount] = useState(0);
   const dropdownTimeoutRef = useRef(null);
-  const tcgSubDropdownTimeoutRef = useRef(null);
 
   useEffect(() => {
     const fetchCartCount = async () => {
@@ -61,20 +59,6 @@ const Navbar = () => {
   const handleMouseLeave = () => {
     dropdownTimeoutRef.current = setTimeout(() => {
       setActiveDropdown(null);
-      setActiveTcgSubDropdown(null);
-    }, 300);
-  };
-
-  const handleTcgSubMouseEnter = (subcategory) => {
-    if (tcgSubDropdownTimeoutRef.current) {
-      clearTimeout(tcgSubDropdownTimeoutRef.current);
-    }
-    setActiveTcgSubDropdown(subcategory);
-  };
-
-  const handleTcgSubMouseLeave = () => {
-    tcgSubDropdownTimeoutRef.current = setTimeout(() => {
-      setActiveTcgSubDropdown(null);
     }, 300);
   };
 
@@ -93,7 +77,7 @@ const Navbar = () => {
       <div className="navbar-container">
         <div className="navbar-logo">
           <Link to="/">
-            <h1>GameCash</h1>
+            <h1>GamerClash</h1>
           </Link>
         </div>
         
@@ -146,7 +130,7 @@ const Navbar = () => {
             )}
           </div>
 
-          {/* TCG avec sous-catégories et sous-sous-catégories */}
+          {/* TCG avec sous-catégories simplifiées - SANS SOUS-SOUS-CATÉGORIES */}
           <div 
             className={`nav-item-dropdown ${isActiveCategory('tcg') ? 'active' : ''}`}
             onMouseEnter={() => handleMouseEnter('tcg')}
@@ -156,43 +140,15 @@ const Navbar = () => {
               TCG <ChevronDown size={16} className="dropdown-icon" />
             </Link>
             {activeDropdown === 'tcg' && (
-              <div className="dropdown-menu">
+              <div className="dropdown-menu scrollable-dropdown">
                 {SUBCATEGORIES.tcg.map(sub => (
-                  <div key={sub.id} className="tcg-dropdown-item">
-                    {sub.subCategories ? (
-                      <div 
-                        className="dropdown-item with-submenu"
-                        onMouseEnter={() => handleTcgSubMouseEnter(sub.id)}
-                        onMouseLeave={handleTcgSubMouseLeave}
-                      >
-                        <Link to={`/tcg/${sub.id}`} className="dropdown-main-link">
-                          {sub.name}
-                        </Link>
-                        <ChevronRight size={14} className="submenu-icon" />
-                        
-                        {activeTcgSubDropdown === sub.id && (
-                          <div className="tcg-submenu">
-                            {sub.subCategories.map(nestedSub => (
-                              <Link 
-                                key={nestedSub.id} 
-                                to={`/tcg/${nestedSub.id}`}
-                                className="dropdown-item"
-                              >
-                                {nestedSub.name}
-                              </Link>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <Link 
-                        to={`/tcg/${sub.id}`}
-                        className="dropdown-item"
-                      >
-                        {sub.name}
-                      </Link>
-                    )}
-                  </div>
+                  <Link 
+                    key={sub.id} 
+                    to={`/tcg/${sub.id}`}
+                    className="dropdown-item"
+                  >
+                    {sub.name}
+                  </Link>
                 ))}
               </div>
             )}

@@ -1,20 +1,30 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useLocation, Link } from 'react-router-dom';
+import { useParams, useLocation, Link, useNavigate } from 'react-router-dom';
 import Navbar from './Navbar';
 import ProductCard from './ProductCard';
+import CategoryFilter from './CategoryFilter';
 import { getProductsByCategory, getProductsBySubcategory } from '../firebase/products';
 import { SUBCATEGORIES, getParentSubcategory } from '../utils/categories';
 import { ChevronRight } from 'lucide-react';
 import './CategoryPage.css';
+import './CategoryFilter.css';
 
 const CategoryPage = ({ categoryType }) => {
   const { subcategoryId } = useParams();
   const location = useLocation();
+  const navigate = useNavigate();
   const [products, setProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [parentCategory, setParentCategory] = useState(null);
+  const [activeFilters, setActiveFilters] = useState({
+    subcategory: subcategoryId || 'all',
+    priceRange: [0, 1000],
+    sortBy: 'default',
+    inStock: false
+  });
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -79,6 +89,10 @@ const CategoryPage = ({ categoryType }) => {
       
       if (result.success) {
         setProducts(result.products);
+        // Appliquer les filtres initiaux
+        applyFilters(result.products, activeFilters);
+      } else {
+        setFilteredProducts([]);
       }
       setLoading(false);
     };
@@ -86,45 +100,72 @@ const CategoryPage = ({ categoryType }) => {
     fetchProducts();
   }, [categoryType, subcategoryId, location.pathname]);
 
-  // Si c'est une sous-catégorie TCG avec des sous-sous-catégories, afficher ces sous-sous-catégories
-  const renderTcgSubcategories = () => {
-    if (categoryType !== 'tcg' || !subcategoryId) return null;
+  // Fonction pour appliquer tous les filtres actifs
+  const applyFilters = (productsToFilter, filters) => {
+    let result = [...productsToFilter];
     
-    const mainCategory = SUBCATEGORIES.tcg.find(cat => cat.id === subcategoryId);
-    if (!mainCategory || !mainCategory.subCategories) return null;
+    // Filtre par sous-catégorie si on est sur la page principale
+    if (!subcategoryId && filters.subcategory && filters.subcategory !== 'all') {
+      result = result.filter(product => 
+        product.subcategories && product.subcategories.includes(filters.subcategory)
+      );
+    }
     
-    return (
-      <div className="subcategories-list">
-        {mainCategory.subCategories.map(subcategory => (
-          <Link 
-            key={subcategory.id} 
-            to={`/tcg/${subcategory.id}`}
-            className="subcategory-link"
-          >
-            {subcategory.name}
-          </Link>
-        ))}
-      </div>
-    );
+    // Filtre par gamme de prix
+    if (filters.priceRange) {
+      const [min, max] = filters.priceRange;
+      result = result.filter(product => 
+        product.price >= min && product.price <= max
+      );
+    }
+    
+    // Filtre par disponibilité en stock
+    if (filters.inStock) {
+      result = result.filter(product => product.stock > 0);
+    }
+    
+    // Tri des produits
+    if (filters.sortBy) {
+      switch (filters.sortBy) {
+        case 'price_asc':
+          result.sort((a, b) => a.price - b.price);
+          break;
+        case 'price_desc':
+          result.sort((a, b) => b.price - a.price);
+          break;
+        case 'newest':
+          result.sort((a, b) => {
+            // Si createdAt est disponible, l'utiliser pour le tri
+            if (a.createdAt && b.createdAt) {
+              return b.createdAt.seconds - a.createdAt.seconds;
+            }
+            return 0;
+          });
+          break;
+        default:
+          // Tri par défaut (aucun tri spécifique)
+          break;
+      }
+    }
+    
+    setFilteredProducts(result);
   };
 
-  // Afficher des liens de navigation pour les sous-catégories principales
-  const renderSubcategories = () => {
-    if (subcategoryId) return null; // Ne pas afficher la liste si on est déjà dans une sous-catégorie
+  // Gestionnaire pour les changements de filtre
+  const handleFilterChange = (filters) => {
+    // Si le filtre de sous-catégorie change et que nous ne sommes pas déjà sur une sous-catégorie
+    if (filters.subcategory && filters.subcategory !== 'all' && !subcategoryId) {
+      // Naviguer vers la page de la sous-catégorie sélectionnée
+      navigate(`/${categoryType}/${filters.subcategory}`);
+      return;
+    }
     
-    return (
-      <div className="subcategories-list">
-        {SUBCATEGORIES[categoryType]?.map(subcategory => (
-          <Link 
-            key={subcategory.id} 
-            to={`/${categoryType}/${subcategory.id}`}
-            className="subcategory-link"
-          >
-            {subcategory.name}
-          </Link>
-        ))}
-      </div>
-    );
+    // Mettre à jour les filtres actifs
+    const updatedFilters = { ...activeFilters, ...filters };
+    setActiveFilters(updatedFilters);
+    
+    // Appliquer les filtres mis à jour
+    applyFilters(products, updatedFilters);
   };
 
   // Créer un fil d'Ariane pour la navigation
@@ -156,31 +197,43 @@ const CategoryPage = ({ categoryType }) => {
     );
   };
 
+  // Version plus petite de l'en-tête de la page d'accueil
+  const renderCategoryHero = () => {
+    return (
+      <div className="category-hero-section">
+        <h2>{title}</h2>
+        <p>{description}</p>
+      </div>
+    );
+  };
+
   return (
     <div className="page-container">
       <Navbar />
       <div className="category-content">
         {renderBreadcrumb()}
-        <h1>{title}</h1>
-        <p>{description}</p>
         
-        {/* Afficher les sous-catégories principales si on est dans la page catégorie principale */}
-        {renderSubcategories()}
+        {/* Nouvel en-tête inspiré de la page d'accueil */}
+        {renderCategoryHero()}
         
-        {/* Afficher les sous-sous-catégories pour TCG si on est dans une sous-catégorie principale */}
-        {renderTcgSubcategories()}
+        {/* Filtres de catégorie pour toutes les catégories */}
+        <CategoryFilter 
+          categoryType={categoryType}
+          subcategoryId={subcategoryId}
+          onFilterChange={handleFilterChange}
+        />
         
         {loading ? (
           <div style={{ textAlign: 'center', padding: '2rem' }}>
             Chargement des produits...
           </div>
-        ) : products.length === 0 ? (
+        ) : filteredProducts.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '2rem' }}>
             Aucun produit disponible pour le moment.
           </div>
         ) : (
           <div className="products-grid">
-            {products.map(product => (
+            {filteredProducts.map(product => (
               <ProductCard 
                 key={product.id}
                 id={product.id}
