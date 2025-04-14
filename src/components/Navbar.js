@@ -50,7 +50,7 @@ const Navbar = () => {
     }
   };
 
-  // Modification: Seulement activer le menu déroulant quand on survole la flèche
+  // Modification: Activer le menu déroulant seulement quand on survole la flèche
   const handleDropdownToggle = (category, isActive) => {
     if (dropdownTimeoutRef.current) {
       clearTimeout(dropdownTimeoutRef.current);
@@ -88,15 +88,23 @@ const Navbar = () => {
           {/* Gaming avec sous-catégories */}
           <div 
             className={`nav-item-dropdown ${isActiveCategory('gaming') ? 'active' : ''}`}
+            onMouseEnter={() => {}}
+            onMouseLeave={() => {
+              if (activeDropdown === 'gaming') {
+                dropdownTimeoutRef.current = setTimeout(() => {
+                  setActiveDropdown(null);
+                }, 300);
+              }
+            }}
           >
             <Link to="/gaming" className="nav-item">
               Gaming 
               <span 
                 className="dropdown-icon-wrapper"
                 onMouseEnter={() => handleDropdownToggle('gaming', true)}
-                onMouseLeave={() => handleDropdownToggle('gaming', false)}
+                onMouseLeave={() => {}}
               >
-                <ChevronDown size={16} className="dropdown-icon" />
+                <ChevronDown size={16} className={`dropdown-icon ${activeDropdown === 'gaming' ? 'active' : ''}`} />
               </span>
             </Link>
             {activeDropdown === 'gaming' && (
@@ -121,15 +129,23 @@ const Navbar = () => {
           {/* Retro avec sous-catégories */}
           <div 
             className={`nav-item-dropdown ${isActiveCategory('retro') ? 'active' : ''}`}
+            onMouseEnter={() => {}}
+            onMouseLeave={() => {
+              if (activeDropdown === 'retro') {
+                dropdownTimeoutRef.current = setTimeout(() => {
+                  setActiveDropdown(null);
+                }, 300);
+              }
+            }}
           >
             <Link to="/retro" className="nav-item">
               Retro 
               <span 
                 className="dropdown-icon-wrapper"
                 onMouseEnter={() => handleDropdownToggle('retro', true)}
-                onMouseLeave={() => handleDropdownToggle('retro', false)}
+                onMouseLeave={() => {}}
               >
-                <ChevronDown size={16} className="dropdown-icon" />
+                <ChevronDown size={16} className={`dropdown-icon ${activeDropdown === 'retro' ? 'active' : ''}`} />
               </span>
             </Link>
             {activeDropdown === 'retro' && (
@@ -154,15 +170,23 @@ const Navbar = () => {
           {/* TCG avec sous-catégories simplifiées - SANS SOUS-SOUS-CATÉGORIES */}
           <div 
             className={`nav-item-dropdown ${isActiveCategory('tcg') ? 'active' : ''}`}
+            onMouseEnter={() => {}}
+            onMouseLeave={() => {
+              if (activeDropdown === 'tcg') {
+                dropdownTimeoutRef.current = setTimeout(() => {
+                  setActiveDropdown(null);
+                }, 300);
+              }
+            }}
           >
             <Link to="/tcg" className="nav-item">
               TCG 
               <span 
                 className="dropdown-icon-wrapper"
                 onMouseEnter={() => handleDropdownToggle('tcg', true)}
-                onMouseLeave={() => handleDropdownToggle('tcg', false)}
+                onMouseLeave={() => {}}
               >
-                <ChevronDown size={16} className="dropdown-icon" />
+                <ChevronDown size={16} className={`dropdown-icon ${activeDropdown === 'tcg' ? 'active' : ''}`} />
               </span>
             </Link>
             {activeDropdown === 'tcg' && (
@@ -187,15 +211,23 @@ const Navbar = () => {
           {/* Goodies avec sous-catégories */}
           <div 
             className={`nav-item-dropdown ${isActiveCategory('goodies') ? 'active' : ''}`}
+            onMouseEnter={() => {}}
+            onMouseLeave={() => {
+              if (activeDropdown === 'goodies') {
+                dropdownTimeoutRef.current = setTimeout(() => {
+                  setActiveDropdown(null);
+                }, 300);
+              }
+            }}
           >
             <Link to="/goodies" className="nav-item">
               Goodies 
               <span 
                 className="dropdown-icon-wrapper"
                 onMouseEnter={() => handleDropdownToggle('goodies', true)}
-                onMouseLeave={() => handleDropdownToggle('goodies', false)}
+                onMouseLeave={() => {}}
               >
-                <ChevronDown size={16} className="dropdown-icon" />
+                <ChevronDown size={16} className={`dropdown-icon ${activeDropdown === 'goodies' ? 'active' : ''}`} />
               </span>
             </Link>
             {activeDropdown === 'goodies' && (

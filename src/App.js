@@ -14,6 +14,8 @@ import CartPage from './components/CartPage';
 import ProductDetailPage from './components/ProductDetailPage';
 import SearchResultsPage from './components/SearchResultsPage';
 import AdminDashboard from './components/admin/AdminDashboard';
+import AdminUserProfile from './components/admin/AdminUserProfile';
+import AdminUsersList from './components/admin/AdminUsersList';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import CategoryPage from './components/CategoryPage';
 import './App.css';
@@ -107,6 +109,10 @@ function App() {
             <Route path="/admin/edit-product/:id" element={<ProtectedAdminRoute><AdminDashboard /></ProtectedAdminRoute>} />
             <Route path="/admin/orders" element={<ProtectedAdminRoute><AdminDashboard /></ProtectedAdminRoute>} />
             <Route path="/admin/settings" element={<ProtectedAdminRoute><AdminDashboard /></ProtectedAdminRoute>} />
+            
+            {/* Nouvelles routes admin pour la gestion des utilisateurs */}
+            <Route path="/admin/users" element={<ProtectedAdminRoute><AdminUsersList /></ProtectedAdminRoute>} />
+            <Route path="/admin/users/:userId" element={<ProtectedAdminRoute><AdminUserProfile /></ProtectedAdminRoute>} />
             
             <Route path="*" element={<HomePage />} />
           </Routes>

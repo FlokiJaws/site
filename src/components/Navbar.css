@@ -74,11 +74,10 @@
 }
 
 .dropdown-icon {
-  margin-left: 5px;
   transition: transform 0.3s ease;
 }
 
-.nav-item-dropdown:hover .dropdown-icon {
+.dropdown-icon.active {
   transform: rotate(180deg);
 }
 
@@ -426,6 +425,7 @@
   right: -5px;
 }
 
+/* Style amélioré pour le wrapper d'icône de dropdown */
 .dropdown-icon-wrapper {
   padding: 0.5rem;
   margin-left: 5px;
@@ -434,8 +434,9 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  transition: background-color 0.2s ease;
 }
 
 .dropdown-icon-wrapper:hover {
-  background-color: rgba(98, 0, 234, 0.1);
+  background-color: rgba(98, 0, 234, 0.15);
 }

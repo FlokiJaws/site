@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Settings, ShoppingBag, Users, PlusCircle, LogOut, BarChart, Home } from 'lucide-react';
+import { Settings, ShoppingBag, PlusCircle, LogOut, BarChart, Home } from 'lucide-react';
 import { logoutUser } from '../../firebase/auth';
 import AdminProductList from './AdminProductList';
 import AdminProductForm from './AdminProductForm';
@@ -69,7 +69,7 @@ const AdminDashboard = () => {
             to="/admin/orders"
             className={`admin-menu-item ${path === '/admin/orders' ? 'active' : ''}`}
           >
-            <Users size={20} />
+            <ShoppingBag size={20} />
             <span>Commandes</span>
           </Link>
           <Link 
@@ -78,6 +78,14 @@ const AdminDashboard = () => {
           >
             <Settings size={20} />
             <span>Paramètres</span>
+          </Link>
+          {/* Lien vers la page de gestion des utilisateurs (maintenant séparée) */}
+          <Link 
+            to="/admin/users"
+            className="admin-menu-item"
+          >
+            <BarChart size={20} />
+            <span>Gestion des utilisateurs</span>
           </Link>
           <button 
             className="admin-menu-item logout"
