@@ -18,6 +18,11 @@
   width: 100%;
 }
 
+.navbar-search {
+  max-width: 250px;
+  margin-right: 15px;
+}
+
 .navbar-logo {
   margin-left: 0;
 }
@@ -329,6 +334,11 @@
     padding-bottom: 0.5rem;
   }
   
+  .navbar-search {
+    max-width: 200px;
+    margin-right: 10px;
+  }
+  
   .navbar-container {
     flex-wrap: wrap;
     justify-content: space-between;
@@ -364,12 +374,14 @@
 @media (max-width: 576px) {
   .navbar-container {
     padding: 1rem;
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap: wrap;
     gap: 0.8rem;
+    justify-content: space-between;
   }
   
   .navbar-logo {
-    margin-bottom: 0.5rem;
+    margin-bottom: 0;
   }
   
   .navbar-logo h1 {
@@ -383,10 +395,8 @@
     order: 3;
   }
   
-  .navbar-account {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
+  .navbar-search {
+    max-width: 150px;
   }
   
   .dropdown-menu {

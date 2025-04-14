@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { logoutUser } from '../firebase/auth';
 import { getCartItemCount } from '../firebase/cart';
 import { SUBCATEGORIES } from '../utils/categories';
+import SearchBar from './SearchBar';
 import './Navbar.css';
 
 const Navbar = () => {
@@ -180,6 +181,9 @@ const Navbar = () => {
         </div>
         
         <div className="navbar-account">
+          <div className="navbar-search">
+            <SearchBar />
+          </div>
           <Link to="/cart" className="account-icon" style={{ marginRight: '12px', position: 'relative' }}>
             <ShoppingCart size={22} color="#6200ea" />
             {cartCount > 0 && (

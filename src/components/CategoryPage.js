@@ -3,6 +3,7 @@ import { useParams, useLocation, Link, useNavigate } from 'react-router-dom';
 import Navbar from './Navbar';
 import ProductCard from './ProductCard';
 import CategoryFilter from './CategoryFilter';
+import Pagination from './Pagination';
 import { getProductsByCategory, getProductsBySubcategory } from '../firebase/products';
 import { SUBCATEGORIES, getParentSubcategory } from '../utils/categories';
 import { ChevronRight } from 'lucide-react';
@@ -19,6 +20,9 @@ const CategoryPage = ({ categoryType }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [parentCategory, setParentCategory] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [productsPerPage] = useState(12); // Nombre de produits par page
+  const [paginatedProducts, setPaginatedProducts] = useState([]);
   const [activeFilters, setActiveFilters] = useState({
     subcategory: subcategoryId || 'all',
     priceRange: [0, 1000],
@@ -100,6 +104,25 @@ const CategoryPage = ({ categoryType }) => {
     fetchProducts();
   }, [categoryType, subcategoryId, location.pathname]);
 
+  // Mettre à jour les produits paginés quand les filtres ou la page changent
+  useEffect(() => {
+    // Calculer le nombre total de pages
+    const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
+    
+    // Ajuster la page courante si nécessaire
+    const adjustedCurrentPage = Math.min(currentPage, totalPages || 1);
+    if (adjustedCurrentPage !== currentPage) {
+      setCurrentPage(adjustedCurrentPage);
+    }
+    
+    // Calculer les indices pour la pagination
+    const indexOfLastProduct = adjustedCurrentPage * productsPerPage;
+    const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
+    
+    // Extraire les produits pour la page courante
+    setPaginatedProducts(filteredProducts.slice(indexOfFirstProduct, indexOfLastProduct));
+  }, [filteredProducts, currentPage, productsPerPage]);
+
   // Fonction pour appliquer tous les filtres actifs
   const applyFilters = (productsToFilter, filters) => {
     let result = [...productsToFilter];
@@ -149,6 +172,7 @@ const CategoryPage = ({ categoryType }) => {
     }
     
     setFilteredProducts(result);
+    setCurrentPage(1); // Réinitialiser à la première page après filtrage
   };
 
   // Gestionnaire pour les changements de filtre
@@ -232,21 +256,30 @@ const CategoryPage = ({ categoryType }) => {
             Aucun produit disponible pour le moment.
           </div>
         ) : (
-          <div className="products-grid">
-            {filteredProducts.map(product => (
-              <ProductCard 
-                key={product.id}
-                id={product.id}
-                title={product.name}
-                price={product.price}
-                image={product.imageUrls && product.imageUrls.length > 0 
-                  ? product.imageUrls[0] 
-                  : "/api/placeholder/300/300"}
-                badge={product.badge}
-                stock={product.stock || 0}
-              />
-            ))}
-          </div>
+          <>
+            <div className="products-grid">
+              {paginatedProducts.map(product => (
+                <ProductCard 
+                  key={product.id}
+                  id={product.id}
+                  title={product.name}
+                  price={product.price}
+                  image={product.imageUrls && product.imageUrls.length > 0 
+                    ? product.imageUrls[0] 
+                    : "/api/placeholder/300/300"}
+                  badge={product.badge}
+                  stock={product.stock || 0}
+                />
+              ))}
+            </div>
+            
+            {/* Pagination */}
+            <Pagination
+              currentPage={currentPage}
+              totalPages={Math.ceil(filteredProducts.length / productsPerPage)}
+              onPageChange={(page) => setCurrentPage(page)}
+            />
+          </>
         )}
       </div>
     </div>

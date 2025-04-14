@@ -12,6 +12,7 @@ import UserSettings from './components/UserSettings';
 import OrderHistory from './components/OrderHistory';
 import CartPage from './components/CartPage';
 import ProductDetailPage from './components/ProductDetailPage';
+import SearchResultsPage from './components/SearchResultsPage';
 import AdminDashboard from './components/admin/AdminDashboard';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import CategoryPage from './components/CategoryPage';
@@ -71,6 +72,7 @@ function App() {
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/cart" element={<CartPage />} />
             <Route path="/product/:productId" element={<ProductDetailPage />} />
+            <Route path="/search" element={<SearchResultsPage />} />
             
             {/* Routes protégées pour l'utilisateur */}
             <Route 

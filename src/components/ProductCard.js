@@ -3,6 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { addToCart } from '../firebase/cart';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Plus, Check, AlertCircle } from 'lucide-react';
+import LazyImage from './LazyImage';
 
 const ProductCard = ({ id, title, price, image, badge, stock = 0 }) => {
   const { currentUser } = useAuth();
@@ -75,7 +76,7 @@ const ProductCard = ({ id, title, price, image, badge, stock = 0 }) => {
       style={{ cursor: 'pointer' }}
     >
       <div className="product-image">
-        <img src={image} alt={title} />
+        <LazyImage src={image} alt={title} />
         {badge && <div className="product-badge">{badge}</div>}
       </div>
       <div className="product-info">
