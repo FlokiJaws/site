@@ -425,3 +425,17 @@
   top: -5px;
   right: -5px;
 }
+
+.dropdown-icon-wrapper {
+  padding: 0.5rem;
+  margin-left: 5px;
+  cursor: pointer;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dropdown-icon-wrapper:hover {
+  background-color: rgba(98, 0, 234, 0.1);
+}

@@ -50,17 +50,19 @@ const Navbar = () => {
     }
   };
 
-  const handleMouseEnter = (category) => {
+  // Modification: Seulement activer le menu déroulant quand on survole la flèche
+  const handleDropdownToggle = (category, isActive) => {
     if (dropdownTimeoutRef.current) {
       clearTimeout(dropdownTimeoutRef.current);
     }
-    setActiveDropdown(category);
-  };
-
-  const handleMouseLeave = () => {
-    dropdownTimeoutRef.current = setTimeout(() => {
-      setActiveDropdown(null);
-    }, 300);
+    
+    if (isActive) {
+      setActiveDropdown(category);
+    } else {
+      dropdownTimeoutRef.current = setTimeout(() => {
+        setActiveDropdown(null);
+      }, 300);
+    }
   };
 
   // Vérifier si la route actuelle fait partie d'une sous-catégorie
@@ -86,14 +88,23 @@ const Navbar = () => {
           {/* Gaming avec sous-catégories */}
           <div 
             className={`nav-item-dropdown ${isActiveCategory('gaming') ? 'active' : ''}`}
-            onMouseEnter={() => handleMouseEnter('gaming')}
-            onMouseLeave={handleMouseLeave}
           >
             <Link to="/gaming" className="nav-item">
-              Gaming <ChevronDown size={16} className="dropdown-icon" />
+              Gaming 
+              <span 
+                className="dropdown-icon-wrapper"
+                onMouseEnter={() => handleDropdownToggle('gaming', true)}
+                onMouseLeave={() => handleDropdownToggle('gaming', false)}
+              >
+                <ChevronDown size={16} className="dropdown-icon" />
+              </span>
             </Link>
             {activeDropdown === 'gaming' && (
-              <div className="dropdown-menu">
+              <div 
+                className="dropdown-menu"
+                onMouseEnter={() => handleDropdownToggle('gaming', true)}
+                onMouseLeave={() => handleDropdownToggle('gaming', false)}
+              >
                 {SUBCATEGORIES.gaming.map(sub => (
                   <Link 
                     key={sub.id} 
@@ -110,14 +121,23 @@ const Navbar = () => {
           {/* Retro avec sous-catégories */}
           <div 
             className={`nav-item-dropdown ${isActiveCategory('retro') ? 'active' : ''}`}
-            onMouseEnter={() => handleMouseEnter('retro')}
-            onMouseLeave={handleMouseLeave}
           >
             <Link to="/retro" className="nav-item">
-              Retro <ChevronDown size={16} className="dropdown-icon" />
+              Retro 
+              <span 
+                className="dropdown-icon-wrapper"
+                onMouseEnter={() => handleDropdownToggle('retro', true)}
+                onMouseLeave={() => handleDropdownToggle('retro', false)}
+              >
+                <ChevronDown size={16} className="dropdown-icon" />
+              </span>
             </Link>
             {activeDropdown === 'retro' && (
-              <div className="dropdown-menu scrollable-dropdown">
+              <div 
+                className="dropdown-menu scrollable-dropdown"
+                onMouseEnter={() => handleDropdownToggle('retro', true)}
+                onMouseLeave={() => handleDropdownToggle('retro', false)}
+              >
                 {SUBCATEGORIES.retro.map(sub => (
                   <Link 
                     key={sub.id} 
@@ -134,14 +154,23 @@ const Navbar = () => {
           {/* TCG avec sous-catégories simplifiées - SANS SOUS-SOUS-CATÉGORIES */}
           <div 
             className={`nav-item-dropdown ${isActiveCategory('tcg') ? 'active' : ''}`}
-            onMouseEnter={() => handleMouseEnter('tcg')}
-            onMouseLeave={handleMouseLeave}
           >
             <Link to="/tcg" className="nav-item">
-              TCG <ChevronDown size={16} className="dropdown-icon" />
+              TCG 
+              <span 
+                className="dropdown-icon-wrapper"
+                onMouseEnter={() => handleDropdownToggle('tcg', true)}
+                onMouseLeave={() => handleDropdownToggle('tcg', false)}
+              >
+                <ChevronDown size={16} className="dropdown-icon" />
+              </span>
             </Link>
             {activeDropdown === 'tcg' && (
-              <div className="dropdown-menu scrollable-dropdown">
+              <div 
+                className="dropdown-menu scrollable-dropdown"
+                onMouseEnter={() => handleDropdownToggle('tcg', true)}
+                onMouseLeave={() => handleDropdownToggle('tcg', false)}
+              >
                 {SUBCATEGORIES.tcg.map(sub => (
                   <Link 
                     key={sub.id} 
@@ -158,14 +187,23 @@ const Navbar = () => {
           {/* Goodies avec sous-catégories */}
           <div 
             className={`nav-item-dropdown ${isActiveCategory('goodies') ? 'active' : ''}`}
-            onMouseEnter={() => handleMouseEnter('goodies')}
-            onMouseLeave={handleMouseLeave}
           >
             <Link to="/goodies" className="nav-item">
-              Goodies <ChevronDown size={16} className="dropdown-icon" />
+              Goodies 
+              <span 
+                className="dropdown-icon-wrapper"
+                onMouseEnter={() => handleDropdownToggle('goodies', true)}
+                onMouseLeave={() => handleDropdownToggle('goodies', false)}
+              >
+                <ChevronDown size={16} className="dropdown-icon" />
+              </span>
             </Link>
             {activeDropdown === 'goodies' && (
-              <div className="dropdown-menu">
+              <div 
+                className="dropdown-menu"
+                onMouseEnter={() => handleDropdownToggle('goodies', true)}
+                onMouseLeave={() => handleDropdownToggle('goodies', false)}
+              >
                 {SUBCATEGORIES.goodies.map(sub => (
                   <Link 
                     key={sub.id} 
