@@ -282,3 +282,52 @@
       margin-top: 0.5rem;
     }
   }
+
+  .order-item-review {
+    margin-left: 1rem;
+  }
+  
+  .leave-review-button, .view-review-button {
+    padding: 0.5rem 0.8rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.3s ease;
+  }
+  
+  .leave-review-button {
+    background-color: var(--primary-color);
+    color: white;
+  }
+  
+  .leave-review-button:hover {
+    background-color: #5000d6;
+    box-shadow: 0 2px 6px rgba(98, 0, 234, 0.2);
+  }
+  
+  .view-review-button {
+    background-color: #f0f0f0;
+    color: #666;
+  }
+  
+  .view-review-button:hover {
+    background-color: #e0e0e0;
+  }
+  
+  @media (max-width: 768px) {
+    .order-detail-item {
+      flex-wrap: wrap;
+    }
+    
+    .order-item-review {
+      margin-left: 0;
+      margin-top: 0.8rem;
+      width: 100%;
+    }
+    
+    .leave-review-button, .view-review-button {
+      display: block;
+      text-align: center;
+    }
+  }

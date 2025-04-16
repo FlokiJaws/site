@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import Navbar from './Navbar';
 import { useAuth } from '../contexts/AuthContext';
 import { getUserOrderHistory } from '../firebase/checkout';
+import { getUserProductReview } from '../firebase/reviews';
 import { Package, ChevronDown, ChevronUp } from 'lucide-react';
 import './OrderHistory.css';
 
@@ -13,6 +14,7 @@ const OrderHistory = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [expandedOrder, setExpandedOrder] = useState(null);
+  const [reviewedProducts, setReviewedProducts] = useState({});
 
   useEffect(() => {
     const fetchOrderHistory = async () => {
@@ -45,6 +47,31 @@ const OrderHistory = () => {
 
     fetchOrderHistory();
   }, [currentUser, navigate]);
+
+  useEffect(() => {
+    const checkReviewedProducts = async () => {
+      if (!currentUser || !orders.length) return;
+      
+      const reviewedProductsMap = {};
+      
+      // Parcourir toutes les commandes et leurs produits
+      for (const order of orders) {
+        if (order.status === 'delivered') {
+          for (const item of order.items) {
+            // Vérifier si l'utilisateur a déjà évalué ce produit
+            const result = await getUserProductReview(currentUser.uid, item.productId);
+            if (result.success) {
+              reviewedProductsMap[item.productId] = result.review ? true : false;
+            }
+          }
+        }
+      }
+      
+      setReviewedProducts(reviewedProductsMap);
+    };
+    
+    checkReviewedProducts();
+  }, [currentUser, orders]);
 
   const toggleOrderDetails = (orderId) => {
     setExpandedOrder(expandedOrder === orderId ? null : orderId);
@@ -190,7 +217,7 @@ const OrderHistory = () => {
                     <h3>Détail des articles</h3>
                     <div className="order-items-list">
                       {order.items.map((item, index) => (
-                        <div key={index} className="order-item">
+                        <div key={index} className="order-detail-item">
                           <div className="order-item-image-container">
                             <img 
                               src={item.image || "/api/placeholder/60/60"} 
@@ -205,6 +232,26 @@ const OrderHistory = () => {
                           <div className="order-item-total">
                             {(item.price * item.quantity).toFixed(2)} €
                           </div>
+                          
+                          {order.status === 'delivered' && (
+                            <div className="order-item-review">
+                              {reviewedProducts[item.productId] ? (
+                                <Link 
+                                  to={`/reviews/${item.productId}`} 
+                                  className="view-review-button"
+                                >
+                                  Voir votre avis
+                                </Link>
+                              ) : (
+                                <Link 
+                                  to={`/reviews/${item.productId}`} 
+                                  className="leave-review-button"
+                                >
+                                  Laisser un avis
+                                </Link>
+                              )}
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>

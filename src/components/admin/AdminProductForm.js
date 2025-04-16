@@ -35,15 +35,8 @@ const AdminProductForm = () => {
   
   const badgeOptions = [
     { value: '', label: 'Aucun' },
-    { value: 'Nouveau', label: 'Nouveau' },
-    { value: 'Promo', label: 'Promo' },
-    { value: 'Populaire', label: 'Populaire' },
-    { value: 'Stock limité', label: 'Stock limité' },
-    { value: 'Rare', label: 'Rare' },
-    { value: 'Collector', label: 'Collector' },
-    { value: 'Edition limitée', label: 'Edition limitée' },
-    { value: 'Classique', label: 'Classique' },
-    { value: 'Retro', label: 'Retro' }
+    { value: 'Neuf', label: 'Neuf' },
+    { value: 'Occasion', label: 'Occasion' }
   ];
 
   useEffect(() => {

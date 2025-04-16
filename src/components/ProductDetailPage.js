@@ -4,7 +4,8 @@ import { ArrowLeft, ShoppingCart, Plus, Minus, ChevronLeft, ChevronRight } from 
 import { getProductById } from '../firebase/products';
 import { addToCart } from '../firebase/cart';
 import { useAuth } from '../contexts/AuthContext';
-import Navbar from './Navbar'; // Importer la barre de navigation
+import Navbar from './Navbar';
+import ProductReviewsSection from './ProductReviewsSection';
 import './ProductDetailPage.css';
 
 const ProductDetailPage = () => {
@@ -192,131 +193,136 @@ const ProductDetailPage = () => {
   return (
     <>
       <Navbar />
-      <div className="product-detail-page" style={{ height: 'calc(100vh - 70px)' }}>
-        <button onClick={handleBack} className="product-detail-back">
-          <ArrowLeft size={20} />
-        </button>
+      <div className="product-detail-container">
+        <div className="product-detail-page">
+          <button onClick={handleBack} className="product-detail-back">
+            <ArrowLeft size={20} />
+          </button>
 
-        <div className="product-image-gallery">
-          {product.imageUrls && product.imageUrls.length > 0 ? (
-            <>
-              <img 
-                src={product.imageUrls[currentImageIndex]} 
-                alt={product.name} 
-                className="product-main-image"
-                style={{ 
-                  opacity: isImageLoaded ? 1 : 0, 
-                  transition: 'opacity 0.3s ease-in-out',
-                  transform: isChangeingImage ? 'scale(0.95)' : 'scale(1)'
-                }}
-                onLoad={handleImageLoad}
-              />
-              
-              {product.imageUrls.length > 1 && (
-                <>
-                  <button onClick={handlePrevImage} className="product-image-nav prev">
-                    <ChevronLeft size={20} />
-                  </button>
-                  <button onClick={handleNextImage} className="product-image-nav next">
-                    <ChevronRight size={20} />
-                  </button>
-                  
-                  <div className="product-thumbnails">
-                    {product.imageUrls.map((url, index) => (
-                      <img
-                        key={index}
-                        src={url}
-                        alt={`Miniature ${index + 1}`}
-                        className={`product-thumbnail ${index === currentImageIndex ? 'active' : ''}`}
-                        onClick={() => handleThumbnailClick(index)}
-                      />
-                    ))}
-                  </div>
-                </>
-              )}
-            </>
-          ) : (
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-              <p>Aucune image disponible</p>
+          <div className="product-image-gallery">
+            {product.imageUrls && product.imageUrls.length > 0 ? (
+              <>
+                <img 
+                  src={product.imageUrls[currentImageIndex]} 
+                  alt={product.name} 
+                  className="product-main-image"
+                  style={{ 
+                    opacity: isImageLoaded ? 1 : 0, 
+                    transition: 'opacity 0.3s ease-in-out',
+                    transform: isChangeingImage ? 'scale(0.95)' : 'scale(1)'
+                  }}
+                  onLoad={handleImageLoad}
+                />
+                
+                {product.imageUrls.length > 1 && (
+                  <>
+                    <button onClick={handlePrevImage} className="product-image-nav prev">
+                      <ChevronLeft size={20} />
+                    </button>
+                    <button onClick={handleNextImage} className="product-image-nav next">
+                      <ChevronRight size={20} />
+                    </button>
+                    
+                    <div className="product-thumbnails">
+                      {product.imageUrls.map((url, index) => (
+                        <img
+                          key={index}
+                          src={url}
+                          alt={`Miniature ${index + 1}`}
+                          className={`product-thumbnail ${index === currentImageIndex ? 'active' : ''}`}
+                          onClick={() => handleThumbnailClick(index)}
+                        />
+                      ))}
+                    </div>
+                  </>
+                )}
+              </>
+            ) : (
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                <p>Aucune image disponible</p>
+              </div>
+            )}
+          </div>
+
+          <div className="product-info-panel">
+            <h1 className="product-title">{product.name}</h1>
+            
+            {product.badge && (
+              <div className="product-detail-badge">{product.badge}</div>
+            )}
+            
+            <div className="product-detail-price">{product.price.toFixed(2)} €</div>
+            
+            <div className="product-stock">
+              <div className={`stock-indicator ${stockStatus.status}`}></div>
+              <span>{stockStatus.text}</span>
             </div>
-          )}
-        </div>
-
-        <div className="product-info-panel">
-          <h1 className="product-title">{product.name}</h1>
-          
-          {product.badge && (
-            <div className="product-detail-badge">{product.badge}</div>
-          )}
-          
-          <div className="product-detail-price">{product.price.toFixed(2)} €</div>
-          
-          <div className="product-stock">
-            <div className={`stock-indicator ${stockStatus.status}`}></div>
-            <span>{stockStatus.text}</span>
-          </div>
-          
-          <div className="product-description">
-            {product.description || "Aucune description disponible pour ce produit."}
-          </div>
-          
-          <div className="product-actions">
-            <div className="quantity-selector">
+            
+            <div className="product-description">
+              {product.description || "Aucune description disponible pour ce produit."}
+            </div>
+            
+            <div className="product-actions">
+              <div className="quantity-selector">
+                <button 
+                  className="quantity-btn" 
+                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  disabled={stockStatus.status === 'out-of-stock'}
+                >
+                  <Minus size={16} />
+                </button>
+                <input
+                  type="number"
+                  className="quantity-input"
+                  value={quantity}
+                  onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                  min="1"
+                  max={product.stock || 1}
+                  disabled={stockStatus.status === 'out-of-stock'}
+                />
+                <button 
+                  className="quantity-btn" 
+                  onClick={() => setQuantity(Math.min(product.stock || 99, quantity + 1))}
+                  disabled={stockStatus.status === 'out-of-stock' || quantity >= product.stock}
+                >
+                  <Plus size={16} />
+                </button>
+              </div>
+              
               <button 
-                className="quantity-btn" 
-                onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                disabled={stockStatus.status === 'out-of-stock'}
+                className="add-to-cart-btn" 
+                onClick={handleAddToCart}
+                disabled={addingToCart || stockStatus.status === 'out-of-stock' || cartSuccess}
+                style={{
+                  backgroundColor: cartSuccess ? '#4CAF50' : cartError ? '#f44336' : '',
+                  background: cartSuccess ? 'none' : cartError ? 'none' : ''
+                }}
               >
-                <Minus size={16} />
-              </button>
-              <input
-                type="number"
-                className="quantity-input"
-                value={quantity}
-                onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                min="1"
-                max={product.stock || 1}
-                disabled={stockStatus.status === 'out-of-stock'}
-              />
-              <button 
-                className="quantity-btn" 
-                onClick={() => setQuantity(Math.min(product.stock || 99, quantity + 1))}
-                disabled={stockStatus.status === 'out-of-stock' || quantity >= product.stock}
-              >
-                <Plus size={16} />
+                {addingToCart ? (
+                  'Ajout en cours...'
+                ) : cartSuccess ? (
+                  'Ajouté au panier ✓'
+                ) : stockStatus.status === 'out-of-stock' ? (
+                  'Indisponible'
+                ) : (
+                  <>
+                    <ShoppingCart size={18} />
+                    Ajouter au panier
+                  </>
+                )}
               </button>
             </div>
             
-            <button 
-              className="add-to-cart-btn" 
-              onClick={handleAddToCart}
-              disabled={addingToCart || stockStatus.status === 'out-of-stock' || cartSuccess}
-              style={{
-                backgroundColor: cartSuccess ? '#4CAF50' : cartError ? '#f44336' : '',
-                background: cartSuccess ? 'none' : cartError ? 'none' : ''
-              }}
-            >
-              {addingToCart ? (
-                'Ajout en cours...'
-              ) : cartSuccess ? (
-                'Ajouté au panier ✓'
-              ) : stockStatus.status === 'out-of-stock' ? (
-                'Indisponible'
-              ) : (
-                <>
-                  <ShoppingCart size={18} />
-                  Ajouter au panier
-                </>
-              )}
-            </button>
+            {cartError && (
+              <div style={{ color: 'red', marginTop: '1rem', textAlign: 'center' }}>
+                {cartError}
+              </div>
+            )}
           </div>
-          
-          {cartError && (
-            <div style={{ color: 'red', marginTop: '1rem', textAlign: 'center' }}>
-              {cartError}
-            </div>
-          )}
         </div>
+        
+        {/* Section des avis */}
+        <ProductReviewsSection product={product} />
       </div>
     </>
   );
