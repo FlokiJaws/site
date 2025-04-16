@@ -19,15 +19,34 @@ import {
   export const addReview = async (review) => {
     try {
       // Vérifier que les champs obligatoires sont présents
-      if (!review.userId || !review.productId || !review.rating) {
-        return { success: false, error: "Informations manquantes" };
+      if (!review.userId) {
+        return { success: false, error: "ID utilisateur manquant" };
       }
   
-      // Vérifier si l'utilisateur a déjà laissé un avis pour ce produit
-      const existingReview = await getUserProductReview(review.userId, review.productId);
-      
-      if (existingReview.review) {
-        return { success: false, error: "Vous avez déjà laissé un avis pour ce produit" };
+      // Vérifier si c'est un avis de produit ou de catégorie
+      if (review.reviewType === 'category') {
+        if (!review.categoryType || !review.rating) {
+          return { success: false, error: "Informations manquantes" };
+        }
+        
+        // Vérifier si l'utilisateur a déjà laissé un avis pour cette catégorie
+        const existingReview = await getUserCategoryReview(review.userId, review.categoryType);
+        
+        if (existingReview.review) {
+          return { success: false, error: "Vous avez déjà laissé un avis pour cette catégorie" };
+        }
+      } else {
+        // Avis de produit par défaut
+        if (!review.productId || !review.rating) {
+          return { success: false, error: "Informations manquantes" };
+        }
+        
+        // Vérifier si l'utilisateur a déjà laissé un avis pour ce produit
+        const existingReview = await getUserProductReview(review.userId, review.productId);
+        
+        if (existingReview.review) {
+          return { success: false, error: "Vous avez déjà laissé un avis pour ce produit" };
+        }
       }
   
       // Ajouter l'avis avec un timestamp
@@ -37,8 +56,10 @@ import {
         updatedAt: serverTimestamp()
       });
   
-      // Mettre à jour les statistiques de notation du produit
-      await updateProductRating(review.productId);
+      // Si c'est un avis de produit, mettre à jour les statistiques de notation du produit
+      if (review.reviewType !== 'category' && review.productId) {
+        await updateProductRating(review.productId);
+      }
   
       return { success: true, id: reviewRef.id };
     } catch (error) {
@@ -63,8 +84,10 @@ import {
         updatedAt: serverTimestamp()
       });
       
-      // Mettre à jour les statistiques de notation du produit
-      await updateProductRating(reviewDoc.data().productId);
+      // Si c'est un avis de produit, mettre à jour les statistiques de notation
+      if (reviewDoc.data().reviewType !== 'category' && reviewDoc.data().productId) {
+        await updateProductRating(reviewDoc.data().productId);
+      }
       
       return { success: true };
     } catch (error) {
@@ -83,13 +106,17 @@ import {
         return { success: false, error: "Avis non trouvé" };
       }
       
-      const productId = reviewDoc.data().productId;
+      const reviewData = reviewDoc.data();
+      const isProductReview = reviewData.reviewType !== 'category';
+      const productId = reviewData.productId;
       
       // Supprimer l'avis
       await deleteDoc(reviewRef);
       
-      // Mettre à jour les statistiques de notation du produit
-      await updateProductRating(productId);
+      // Si c'est un avis de produit, mettre à jour les statistiques de notation
+      if (isProductReview && productId) {
+        await updateProductRating(productId);
+      }
       
       return { success: true };
     } catch (error) {
@@ -103,7 +130,8 @@ import {
     try {
       let reviewsQuery = query(
         collection(db, 'reviews'),
-        where('productId', '==', productId)
+        where('productId', '==', productId),
+        where('reviewType', '!=', 'category') // Exclure les avis de catégorie
       );
       
       // Appliquer le tri
@@ -150,13 +178,67 @@ import {
     }
   };
   
+  // Récupérer tous les avis d'une catégorie
+  export const getCategoryReviews = async (categoryType, sortBy = 'recent', limitCount = null) => {
+    try {
+      let reviewsQuery = query(
+        collection(db, 'reviews'),
+        where('categoryType', '==', categoryType),
+        where('reviewType', '==', 'category')
+      );
+      
+      // Appliquer le tri
+      if (sortBy === 'recent') {
+        reviewsQuery = query(reviewsQuery, orderBy('createdAt', 'desc'));
+      } else if (sortBy === 'highest') {
+        reviewsQuery = query(reviewsQuery, orderBy('rating', 'desc'));
+      } else if (sortBy === 'lowest') {
+        reviewsQuery = query(reviewsQuery, orderBy('rating', 'asc'));
+      }
+      
+      // Appliquer une limite si spécifiée
+      if (limitCount && !isNaN(limitCount)) {
+        reviewsQuery = query(reviewsQuery, limit(limitCount));
+      }
+      
+      const querySnapshot = await getDocs(reviewsQuery);
+      const reviews = [];
+      
+      for (const reviewDoc of querySnapshot.docs) {
+        const reviewData = {
+          id: reviewDoc.id,
+          ...reviewDoc.data()
+        };
+        
+        // Récupérer les informations de l'utilisateur
+        if (reviewData.userId) {
+          const userDoc = await getDoc(doc(db, 'users', reviewData.userId));
+          if (userDoc.exists()) {
+            reviewData.user = {
+              displayName: userDoc.data().displayName || 'Utilisateur',
+              photoURL: userDoc.data().photoURL
+            };
+          }
+        }
+        
+        reviews.push(reviewData);
+      }
+      
+      return { success: true, reviews };
+    } catch (error) {
+      console.error("Erreur lors de la récupération des avis de catégorie:", error);
+      return { success: false, error: error.message };
+    }
+  };
+  
   // Vérifier si un utilisateur a déjà laissé un avis pour un produit
   export const getUserProductReview = async (userId, productId) => {
     try {
       const q = query(
         collection(db, 'reviews'),
         where('userId', '==', userId),
-        where('productId', '==', productId)
+        where('productId', '==', productId),
+        where('reviewType', '!=', 'category')
       );
       
       const querySnapshot = await getDocs(q);
@@ -179,6 +261,36 @@ import {
     }
   };
   
+  // Vérifier si un utilisateur a déjà laissé un avis pour une catégorie
+  export const getUserCategoryReview = async (userId, categoryType) => {
+    try {
+      const q = query(
+        collection(db, 'reviews'),
+        where('userId', '==', userId),
+        where('categoryType', '==', categoryType),
+        where('reviewType', '==', 'category')
+      );
+      
+      const querySnapshot = await getDocs(q);
+      
+      if (querySnapshot.empty) {
+        return { success: true, review: null };
+      }
+      
+      const reviewDoc = querySnapshot.docs[0];
+      return { 
+        success: true, 
+        review: {
+          id: reviewDoc.id,
+          ...reviewDoc.data()
+        }
+      };
+    } catch (error) {
+      console.error("Erreur lors de la vérification de l'avis de catégorie:", error);
+      return { success: false, error: error.message };
+    }
+  };
+  
   // Récupérer les avis d'un utilisateur
   export const getUserReviews = async (userId) => {
     try {
@@ -197,8 +309,8 @@ import {
           ...reviewDoc.data()
         };
         
-        // Récupérer les informations du produit
-        if (reviewData.productId) {
+        // Pour les avis de produits, récupérer les informations du produit
+        if (reviewData.reviewType !== 'category' && reviewData.productId) {
           const productDoc = await getDoc(doc(db, 'products', reviewData.productId));
           if (productDoc.exists()) {
             reviewData.product = {
@@ -209,6 +321,20 @@ import {
                 : null
             };
           }
+        }
+        // Pour les avis de catégories, ajouter directement le nom de la catégorie
+        else if (reviewData.reviewType === 'category' && reviewData.categoryType) {
+          const categoryMapping = {
+            'gaming': 'Gaming',
+            'retro': 'Retro',
+            'tcg': 'TCG',
+            'goodies': 'Goodies'
+          };
+          
+          reviewData.category = {
+            id: reviewData.categoryType,
+            name: categoryMapping[reviewData.categoryType] || reviewData.categoryType
+          };
         }
         
         reviews.push(reviewData);
@@ -226,7 +352,8 @@ import {
     try {
       const q = query(
         collection(db, 'reviews'),
-        where('productId', '==', productId)
+        where('productId', '==', productId),
+        where('reviewType', '!=', 'category')
       );
       
       const querySnapshot = await getDocs(q);
