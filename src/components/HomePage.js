@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Navbar from './Navbar';
 import ProductCard from './ProductCard';
 import Pagination from './Pagination';
+import GlobalReviews from './GlobalReviews';
 import { getProductsByCategory } from '../firebase/products';
 import './HomePage.css';
 
@@ -24,6 +25,7 @@ const HomePage = () => {
     fetchProducts();
   }, []);
   
+  // Mise à jour des produits paginés lorsque les produits ou la page changent
   // Mise à jour des produits paginés lorsque les produits ou la page changent
   useEffect(() => {
     // Calculer le nombre total de pages
@@ -89,6 +91,9 @@ const HomePage = () => {
             </>
           )}
         </div>
+        
+        {/* Ajout de la section avis globaux */}
+        <GlobalReviews />
       </div>
     </div>
   );

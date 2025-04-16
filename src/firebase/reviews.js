@@ -1,4 +1,3 @@
-// src/firebase/reviews.js
 import { 
     collection, 
     addDoc, 
@@ -14,59 +13,6 @@ import {
     serverTimestamp
   } from 'firebase/firestore';
   import { db } from './config';
-  
-  // Ajouter un nouvel avis
-  export const addReview = async (review) => {
-    try {
-      // Vérifier que les champs obligatoires sont présents
-      if (!review.userId) {
-        return { success: false, error: "ID utilisateur manquant" };
-      }
-  
-      // Vérifier si c'est un avis de produit ou de catégorie
-      if (review.reviewType === 'category') {
-        if (!review.categoryType || !review.rating) {
-          return { success: false, error: "Informations manquantes" };
-        }
-        
-        // Vérifier si l'utilisateur a déjà laissé un avis pour cette catégorie
-        const existingReview = await getUserCategoryReview(review.userId, review.categoryType);
-        
-        if (existingReview.review) {
-          return { success: false, error: "Vous avez déjà laissé un avis pour cette catégorie" };
-        }
-      } else {
-        // Avis de produit par défaut
-        if (!review.productId || !review.rating) {
-          return { success: false, error: "Informations manquantes" };
-        }
-        
-        // Vérifier si l'utilisateur a déjà laissé un avis pour ce produit
-        const existingReview = await getUserProductReview(review.userId, review.productId);
-        
-        if (existingReview.review) {
-          return { success: false, error: "Vous avez déjà laissé un avis pour ce produit" };
-        }
-      }
-  
-      // Ajouter l'avis avec un timestamp
-      const reviewRef = await addDoc(collection(db, 'reviews'), {
-        ...review,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
-      });
-  
-      // Si c'est un avis de produit, mettre à jour les statistiques de notation du produit
-      if (review.reviewType !== 'category' && review.productId) {
-        await updateProductRating(review.productId);
-      }
-  
-      return { success: true, id: reviewRef.id };
-    } catch (error) {
-      console.error("Erreur lors de l'ajout de l'avis:", error);
-      return { success: false, error: error.message };
-    }
-  };
   
   // Mettre à jour un avis existant
   export const updateReview = async (reviewId, updatedData) => {
@@ -382,5 +328,165 @@ import {
       });
     } catch (error) {
       console.error("Erreur lors de la mise à jour des statistiques de notation:", error);
+    }
+  };
+
+  // Ces fonctions sont à ajouter dans src/firebase/reviews.js
+
+// Récupérer tous les avis globaux
+export const getGlobalReviews = async (sortBy = 'recent', limitCount = null) => {
+    try {
+      // Importer les fonctions nécessaires si elles ne sont pas déjà importées en haut du fichier
+      // Ces imports sont cruciaux - assurez-vous qu'ils existent en haut de votre fichier reviews.js
+      // import { collection, query, where, orderBy, limit, getDocs, getDoc, doc } from 'firebase/firestore';
+      // import { db } from './config';
+      
+      // Construire la requête de base
+      let reviewsQuery = query(
+        collection(db, 'reviews'),
+        where('reviewType', '==', 'global')
+      );
+      
+      // Appliquer le tri
+      if (sortBy === 'recent') {
+        reviewsQuery = query(reviewsQuery, orderBy('createdAt', 'desc'));
+      } else if (sortBy === 'highest') {
+        reviewsQuery = query(reviewsQuery, orderBy('rating', 'desc'));
+      } else if (sortBy === 'lowest') {
+        reviewsQuery = query(reviewsQuery, orderBy('rating', 'asc'));
+      }
+      
+      // Appliquer une limite si spécifiée
+      if (limitCount && !isNaN(limitCount)) {
+        reviewsQuery = query(reviewsQuery, limit(limitCount));
+      }
+      
+      // Exécuter la requête
+      const querySnapshot = await getDocs(reviewsQuery);
+      const reviews = [];
+      
+      // Traitement des résultats
+      for (const reviewDoc of querySnapshot.docs) {
+        const reviewData = {
+          id: reviewDoc.id,
+          ...reviewDoc.data()
+        };
+        
+        // Récupérer les informations de l'utilisateur
+        if (reviewData.userId) {
+          try {
+            const userDoc = await getDoc(doc(db, 'users', reviewData.userId));
+            if (userDoc.exists()) {
+              reviewData.user = {
+                displayName: userDoc.data().displayName || 'Utilisateur',
+                photoURL: userDoc.data().photoURL
+              };
+            }
+          } catch (userError) {
+            console.warn(`Erreur lors de la récupération des infos utilisateur: ${userError.message}`);
+            // Continue même si on ne peut pas récupérer les infos utilisateur
+          }
+        }
+        
+        reviews.push(reviewData);
+      }
+      
+      return { success: true, reviews };
+    } catch (error) {
+      console.error("Erreur lors de la récupération des avis globaux:", error);
+      return { success: false, error: error.message };
+    }
+  };
+  
+  // Vérifier si un utilisateur a déjà laissé un avis global
+  export const getUserGlobalReview = async (userId) => {
+    try {
+      const q = query(
+        collection(db, 'reviews'),
+        where('userId', '==', userId),
+        where('reviewType', '==', 'global')
+      );
+      
+      const querySnapshot = await getDocs(q);
+      
+      if (querySnapshot.empty) {
+        return { success: true, review: null };
+      }
+      
+      const reviewDoc = querySnapshot.docs[0];
+      return { 
+        success: true, 
+        review: {
+          id: reviewDoc.id,
+          ...reviewDoc.data()
+        }
+      };
+    } catch (error) {
+      console.error("Erreur lors de la vérification de l'avis global:", error);
+      return { success: false, error: error.message };
+    }
+  };
+
+  // Ajouter un nouvel avis
+export const addReview = async (review) => {
+    try {
+      // Vérifier que les champs obligatoires sont présents
+      if (!review.userId) {
+        return { success: false, error: "ID utilisateur manquant" };
+      }
+  
+      // Vérifier si c'est un avis de produit, de catégorie ou global
+      if (review.reviewType === 'category') {
+        if (!review.categoryType || !review.rating) {
+          return { success: false, error: "Informations manquantes" };
+        }
+        
+        // Vérifier si l'utilisateur a déjà laissé un avis pour cette catégorie
+        const existingReview = await getUserCategoryReview(review.userId, review.categoryType);
+        
+        if (existingReview.review) {
+          return { success: false, error: "Vous avez déjà laissé un avis pour cette catégorie" };
+        }
+      } else if (review.reviewType === 'global') {
+        if (!review.rating) {
+          return { success: false, error: "La note est manquante" };
+        }
+        
+        // Vérifier si l'utilisateur a déjà laissé un avis global
+        const existingReview = await getUserGlobalReview(review.userId);
+        
+        if (existingReview.review) {
+          return { success: false, error: "Vous avez déjà laissé un avis global" };
+        }
+      } else {
+        // Avis de produit par défaut
+        if (!review.productId || !review.rating) {
+          return { success: false, error: "Informations manquantes" };
+        }
+        
+        // Vérifier si l'utilisateur a déjà laissé un avis pour ce produit
+        const existingReview = await getUserProductReview(review.userId, review.productId);
+        
+        if (existingReview.review) {
+          return { success: false, error: "Vous avez déjà laissé un avis pour ce produit" };
+        }
+      }
+  
+      // Ajouter l'avis avec un timestamp
+      const reviewRef = await addDoc(collection(db, 'reviews'), {
+        ...review,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      });
+  
+      // Si c'est un avis de produit, mettre à jour les statistiques de notation du produit
+      if (review.reviewType !== 'category' && review.reviewType !== 'global' && review.productId) {
+        await updateProductRating(review.productId);
+      }
+  
+      return { success: true, id: reviewRef.id };
+    } catch (error) {
+      console.error("Erreur lors de l'ajout de l'avis:", error);
+      return { success: false, error: error.message };
     }
   };

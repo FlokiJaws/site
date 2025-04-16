@@ -4,7 +4,7 @@ import Navbar from './Navbar';
 import ProductCard from './ProductCard';
 import CategoryFilter from './CategoryFilter';
 import Pagination from './Pagination';
-import CategoryReviews from './CategoryReviews'; // Import du nouveau composant
+import GlobalReviews from './GlobalReviews'; // Remplacé par le composant d'avis global
 import { getProductsByCategory, getProductsBySubcategory } from '../firebase/products';
 import { SUBCATEGORIES, getParentSubcategory } from '../utils/categories';
 import { ChevronRight } from 'lucide-react';
@@ -283,8 +283,8 @@ const CategoryPage = ({ categoryType }) => {
           </>
         )}
         
-        {/* Section des avis de la catégorie */}
-        {!loading && <CategoryReviews categoryType={categoryType} />}
+        {/* Section des avis globaux */}
+        {!loading && <GlobalReviews />}
       </div>
     </div>
   );
