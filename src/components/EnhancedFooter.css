@@ -1,0 +1,195 @@
+/* EnhancedFooter.css */
+.enhanced-footer {
+    background-color: #222;
+    color: white;
+    padding-bottom: 2rem;
+  }
+  
+  /* Section des avantages */
+  .advantages-section {
+    background-color: #222;
+    padding: 2rem 0;
+    width: 100%;
+  }
+  
+  .advantages-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding: 0 2rem;
+  }
+  
+  .advantage-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    flex: 1;
+    min-width: 150px;
+  }
+  
+  .advantage-icon {
+    width: 80px;
+    height: 80px;
+    background-color: #4caf50; /* Couleur verte comme dans votre exemple */
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+    color: white;
+  }
+  
+  .advantage-text {
+    font-size: 1rem;
+    font-weight: 500;
+    color: white;
+  }
+  
+  /* Section informations */
+  .footer-extended-info {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .footer-info-section {
+    flex: 1;
+    min-width: 250px;
+    margin-bottom: 2rem;
+  }
+  
+  .footer-info-section h3 {
+    font-size: 1.2rem;
+    margin-bottom: 1.5rem;
+    color: white;
+    font-weight: 600;
+  }
+  
+  .footer-info-section a {
+    display: block;
+    color: #ddd;
+    margin-bottom: 0.8rem;
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+  
+  .footer-info-section a:hover {
+    color: white;
+  }
+  
+  .footer-columns {
+    display: flex;
+    gap: 2rem;
+  }
+  
+  .footer-column {
+    flex: 1;
+  }
+  
+  /* Contact */
+  .contact-button {
+    display: inline-block;
+    background-color: #4caf50;
+    color: white !important;
+    padding: 0.8rem 1.5rem;
+    border-radius: 4px;
+    font-weight: 500;
+    margin-top: 1rem;
+    transition: background-color 0.2s ease !important;
+  }
+  
+  .contact-button:hover {
+    background-color: #3d8b40;
+  }
+  
+  .social-links {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+  
+  .social-icon {
+    width: 40px;
+    height: 40px;
+    background-color: #666;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease;
+  }
+  
+  .social-icon:hover {
+    background-color: #4caf50;
+  }
+  
+  /* Paiement */
+  .payment-methods {
+    display: flex;
+    gap: 0.8rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .payment-icon {
+    background-color: white;
+    color: #333;
+    padding: 0.8rem;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+  
+  .reviews-box {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    overflow: hidden;
+    background-color: white;
+    width: fit-content;
+  }
+  
+  .reviews-header {
+    background-color: #ff9800;
+    color: white;
+    padding: 0.5rem 1rem;
+    text-align: center;
+    font-weight: 600;
+  }
+  
+  .reviews-content {
+    color: #333;
+    padding: 0.8rem;
+  }
+  
+  .rating {
+    color: #ff9800;
+    font-size: 1.2rem;
+    font-weight: 700;
+  }
+  
+  /* Responsive */
+  @media (max-width: 768px) {
+    .advantages-container {
+      justify-content: center;
+      gap: 2rem;
+    }
+    
+    .advantage-item {
+      min-width: 120px;
+    }
+    
+    .footer-extended-info {
+      flex-direction: column;
+    }
+    
+    .footer-info-section {
+      width: 100%;
+    }
+  }
