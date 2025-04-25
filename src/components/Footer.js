@@ -1,7 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, Facebook, Twitter, Instagram, GitHub } from 'lucide-react';
+import { Heart, Facebook, Twitter, Instagram, Github } from 'lucide-react';
 import './Footer.css';
+
+// Notez que le changement est ici: GitHub -> Github (avec un 'g' minuscule)
 
 const Footer = () => {
   return (
@@ -71,7 +73,7 @@ const Footer = () => {
                 borderRadius: '50%',
                 transition: 'all 0.3s ease'
               }}>
-                <GitHub size={18} color="white" />
+                <Github size={18} color="white" />
               </a>
             </div>
           </div>

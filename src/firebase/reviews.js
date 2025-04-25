@@ -472,4 +472,44 @@ export const getGlobalReviews = async (sortBy = 'recent', limitCount = null) => 
       return { success: false, error: error.message };
     }
   };
+
+  // Cette fonction addReview doit être ajoutée au fichier src/firebase/reviews.js
+// Ajouter cette fonction avec les autres fonctions d'exportation
+
+// Ajouter un nouvel avis
+export const addReview = async (reviewData) => {
+  try {
+    // Vérifier les données requises
+    if (!reviewData.userId) {
+      return { success: false, error: "ID utilisateur requis" };
+    }
+    
+    if (reviewData.rating < 1 || reviewData.rating > 5) {
+      return { success: false, error: "La note doit être entre 1 et 5" };
+    }
+    
+    // Préparer les données de l'avis avec un timestamp
+    const reviewToAdd = {
+      ...reviewData,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    };
+    
+    // Ajouter l'avis à la collection 'reviews'
+    const reviewRef = await addDoc(collection(db, 'reviews'), reviewToAdd);
+    
+    // Si c'est un avis de produit, mettre à jour les statistiques de notation du produit
+    if (reviewData.reviewType !== 'category' && reviewData.reviewType !== 'global' && reviewData.productId) {
+      await updateProductRating(reviewData.productId);
+    }
+    
+    return { 
+      success: true, 
+      reviewId: reviewRef.id 
+    };
+  } catch (error) {
+    console.error("Erreur lors de l'ajout de l'avis:", error);
+    return { success: false, error: error.message };
+  }
+};
   

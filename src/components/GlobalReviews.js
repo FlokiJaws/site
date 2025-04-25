@@ -5,12 +5,47 @@ import { Star, StarHalf, ThumbsUp, User, ArrowRight } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { 
   getGlobalReviews, 
-  addReview, 
   updateReview, 
   deleteReview,
   getUserGlobalReview
 } from '../firebase/reviews';
 import './ProductReviewsSection.css'; // Réutilisation du style existant
+
+// Suppression de l'import de addReview et implémentation locale
+const addReview = async (reviewData) => {
+  try {
+    // Import des fonctions nécessaires de Firebase directement
+    const { collection, addDoc, serverTimestamp } = await import('firebase/firestore');
+    const { db } = await import('../firebase/config');
+    
+    // Vérifier les données requises
+    if (!reviewData.userId) {
+      return { success: false, error: "ID utilisateur requis" };
+    }
+    
+    if (reviewData.rating < 1 || reviewData.rating > 5) {
+      return { success: false, error: "La note doit être entre 1 et 5" };
+    }
+    
+    // Préparer les données de l'avis avec un timestamp
+    const reviewToAdd = {
+      ...reviewData,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    };
+    
+    // Ajouter l'avis à la collection 'reviews'
+    const reviewRef = await addDoc(collection(db, 'reviews'), reviewToAdd);
+    
+    return { 
+      success: true, 
+      reviewId: reviewRef.id 
+    };
+  } catch (error) {
+    console.error("Erreur lors de l'ajout de l'avis:", error);
+    return { success: false, error: error.message };
+  }
+};
 
 const GlobalReviews = () => {
   const { currentUser } = useAuth();
@@ -355,7 +390,6 @@ const GlobalReviews = () => {
           </form>
         </div>
       )}
-      
       {/* Liste des avis */}
       <div className="reviews-list">
         <h2>Avis des clients ({reviews.length})</h2>
