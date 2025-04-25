@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { User, ShoppingCart, LogOut, Settings, ChevronDown } from 'lucide-react';
+import { User, ShoppingCart, LogOut, Settings, ChevronDown, MessageSquare } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { logoutUser } from '../firebase/auth';
 import { getCartItemCount } from '../firebase/cart';
@@ -261,6 +261,10 @@ const Navbar = () => {
                 {cartCount > 9 ? '9+' : cartCount}
               </div>
             )}
+          </Link>
+          
+          <Link to="/reviews" className="account-icon" style={{ marginRight: '12px' }}>
+            <MessageSquare size={22} color="#6200ea" />
           </Link>
           
           <div className="account-dropdown" style={{ position: 'relative' }}>

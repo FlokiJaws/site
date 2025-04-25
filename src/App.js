@@ -14,6 +14,7 @@ import CartPage from './components/CartPage';
 import ProductDetailPage from './components/ProductDetailPage';
 import SearchResultsPage from './components/SearchResultsPage';
 import ReviewsPage from './components/ReviewsPage';
+import AllReviewsPage from './components/AllReviewsPage';
 import AdminDashboard from './components/admin/AdminDashboard';
 import AdminUserProfile from './components/admin/AdminUserProfile';
 import AdminUsersList from './components/admin/AdminUsersList';
@@ -75,6 +76,11 @@ function App() {
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/cart" element={<CartPage />} />
             <Route path="/reviews/:productId" element={<ReviewsPage />} />
+            <Route path="/product/:productId" element={<ProductDetailPage />} />
+            <Route path="/search" element={<SearchResultsPage />} />
+
+            <Route path="/reviews/:productId" element={<ReviewsPage />} />
+            <Route path="/reviews" element={<AllReviewsPage />} />
             <Route path="/product/:productId" element={<ProductDetailPage />} />
             <Route path="/search" element={<SearchResultsPage />} />
             

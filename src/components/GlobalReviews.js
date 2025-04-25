@@ -1,7 +1,7 @@
 // src/components/GlobalReviews.js
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Star, StarHalf, ThumbsUp, User } from 'lucide-react';
+import { Star, StarHalf, ThumbsUp, User, ArrowRight } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { 
   getGlobalReviews, 
@@ -34,9 +34,10 @@ const GlobalReviews = () => {
         const result = await getGlobalReviews();
         
         if (result.success) {
+          console.log('Avis globaux récupérés:', result.reviews); // Ajout de log pour débugger
           setReviews(result.reviews);
         } else {
-          console.error('Erreur:', result.error);
+          console.error('Erreur lors de la récupération des avis globaux:', result.error);
           setError('Erreur lors de la récupération des avis');
         }
         
@@ -45,19 +46,22 @@ const GlobalReviews = () => {
           const userReviewResult = await getUserGlobalReview(currentUser.uid);
           
           if (userReviewResult.success && userReviewResult.review) {
+            console.log('Avis global de l\'utilisateur trouvé:', userReviewResult.review); // Ajout de log pour débugger
             setUserReview(userReviewResult.review);
             setNewReview({
               rating: userReviewResult.review.rating,
               title: userReviewResult.review.title || '',
               comment: userReviewResult.review.comment || ''
             });
+          } else {
+            console.log('Aucun avis global pour cet utilisateur');
           }
         }
         
         setLoading(false);
       } catch (error) {
-        console.error('Erreur:', error);
-        setError('Une erreur est survenue');
+        console.error('Erreur dans fetchReviews:', error);
+        setError('Une erreur est survenue lors de la récupération des avis');
         setLoading(false);
       }
     };
@@ -227,6 +231,10 @@ const GlobalReviews = () => {
     <div className="product-reviews-section" style={{ marginTop: '3rem' }}>
       <div className="reviews-section-header">
         <h2>Avis sur notre site</h2>
+        <Link to="/reviews" className="view-all-reviews" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          Voir tous les avis
+          <ArrowRight size={16} />
+        </Link>
       </div>
       
       <div className="review-summary">
