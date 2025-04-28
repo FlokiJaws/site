@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from './Navbar';
 import Footer from './EnhancedFooter';
-import { Star, StarHalf, ArrowLeft, Search, Plus, AlertTriangle } from 'lucide-react';
-import { getGlobalReviews, getUserGlobalReview, addReview, updateReview, deleteReview } from '../firebase/reviews';
+import { Star, StarHalf, Edit, Trash, Save, X } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
+import { getGlobalReviews, getUserGlobalReview, updateReview, deleteReview } from '../firebase/reviews';
 import './AllReviewsPage.css';
 
 const AllReviewsPage = () => {
+  const { currentUser } = useAuth(); // Modification ici
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -24,11 +26,6 @@ const AllReviewsPage = () => {
     comment: ''
   });
   const [reviewLoading, setReviewLoading] = useState(false);
-
-  // Import useAuth pour vérifier si l'utilisateur est connecté
-  const { currentUser } = React.useContext(
-    window.AuthContext || { currentUser: null }
-  );
 
   useEffect(() => {
     const fetchAllReviews = async () => {
