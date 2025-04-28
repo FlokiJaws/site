@@ -1,9 +1,12 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from './Navbar';
-import { Star, StarHalf, Filter, ArrowLeft, Search, ChevronDown } from 'lucide-react';
-import { getAllReviews } from '../firebase/reviews';
-import './ReviewsPage.css'; // Réutiliser le style existant
+import Footer from './Footer';
+import { Star, StarHalf, Filter, ArrowLeft, Search, ChevronDown, Plus, AlertTriangle } from 'lucide-react';
+import { getAllReviews, getUserProductReview, getUserGlobalReview, getUserCategoryReview, addReview, updateReview, deleteReview } from '../firebase/reviews';
+import './ReviewsPage.css';
+import './AllReviewsPage.css';
 
 const AllReviewsPage = () => {
   const [reviews, setReviews] = useState([]);
@@ -14,6 +17,25 @@ const AllReviewsPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [filteredReviews, setFilteredReviews] = useState([]);
+  
+  // États pour le formulaire d'avis
+  const [showAddReview, setShowAddReview] = useState(false);
+  const [reviewType, setReviewType] = useState('global');
+  const [categoryType, setCategoryType] = useState('gaming');
+  const [productId, setProductId] = useState('');
+  const [userReview, setUserReview] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [newReview, setNewReview] = useState({
+    rating: 5,
+    title: '',
+    comment: ''
+  });
+  const [reviewLoading, setReviewLoading] = useState(false);
+
+  // Import useAuth pour vérifier si l'utilisateur est connecté
+  const { currentUser } = React.useContext(
+    window.AuthContext || { currentUser: null }
+  );
 
   useEffect(() => {
     const fetchAllReviews = async () => {
@@ -37,6 +59,23 @@ const AllReviewsPage = () => {
 
     fetchAllReviews();
   }, []);
+
+  // Vérifier si l'utilisateur a déjà des avis
+  useEffect(() => {
+    const checkUserReviews = async () => {
+      if (!currentUser) return;
+      
+      // Vérifier l'avis global
+      const globalReviewResult = await getUserGlobalReview(currentUser.uid);
+      if (globalReviewResult.success && globalReviewResult.review) {
+        console.log("L'utilisateur a déjà un avis global");
+      }
+      
+      // D'autres vérifications peuvent être ajoutées ici
+    };
+    
+    checkUserReviews();
+  }, [currentUser]);
 
   useEffect(() => {
     // Appliquer les filtres quand les reviews, filterType, sortBy ou searchTerm changent
@@ -95,6 +134,192 @@ const AllReviewsPage = () => {
     return stars;
   };
 
+  // Rendre les étoiles interactives pour la notation
+  const renderRatingInput = () => {
+    return (
+      <div className="rating-input">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <Star
+            key={star}
+            size={30}
+            onClick={() => setNewReview({ ...newReview, rating: star })}
+            color="#FFD700"
+            fill={newReview.rating >= star ? "#FFD700" : "none"}
+            style={{ cursor: 'pointer' }}
+          />
+        ))}
+      </div>
+    );
+  };
+
+  // Vérifier si l'utilisateur a déjà un avis pour le type sélectionné
+  const checkExistingReview = async () => {
+    if (!currentUser) return false;
+    
+    try {
+      let reviewResult;
+      
+      if (reviewType === 'global') {
+        reviewResult = await getUserGlobalReview(currentUser.uid);
+      } else if (reviewType === 'category') {
+        reviewResult = await getUserCategoryReview(currentUser.uid, categoryType);
+      } else if (reviewType === 'product' && productId) {
+        reviewResult = await getUserProductReview(currentUser.uid, productId);
+      }
+      
+      if (reviewResult.success && reviewResult.review) {
+        setUserReview(reviewResult.review);
+        setNewReview({
+          rating: reviewResult.review.rating,
+          title: reviewResult.review.title || '',
+          comment: reviewResult.review.comment || ''
+        });
+        setIsEditing(true);
+        return true;
+      } else {
+        setUserReview(null);
+        setIsEditing(false);
+        return false;
+      }
+    } catch (error) {
+      console.error("Erreur lors de la vérification des avis existants:", error);
+      return false;
+    }
+  };
+
+  // Préparation du formulaire d'ajout/modification d'avis
+  const handleAddReviewClick = async () => {
+    if (!currentUser) {
+      // Rediriger vers la page de connexion
+      // navigate('/login');
+      alert("Veuillez vous connecter pour ajouter un avis");
+      return;
+    }
+    
+    // Réinitialiser le formulaire
+    setNewReview({
+      rating: 5,
+      title: '',
+      comment: ''
+    });
+    
+    // Vérifier si l'utilisateur a déjà un avis
+    const hasExistingReview = await checkExistingReview();
+    
+    // Afficher le formulaire
+    setShowAddReview(true);
+  };
+
+  // Soumettre un avis
+  const handleSubmitReview = async (e) => {
+    e.preventDefault();
+    
+    if (!currentUser) {
+      alert("Veuillez vous connecter pour ajouter un avis");
+      return;
+    }
+    
+    if (newReview.rating < 1 || newReview.rating > 5) {
+      setError('La note doit être entre 1 et 5');
+      return;
+    }
+    
+    setReviewLoading(true);
+    
+    try {
+      const reviewData = {
+        userId: currentUser.uid,
+        reviewType,
+        rating: newReview.rating,
+        title: newReview.title,
+        comment: newReview.comment
+      };
+      
+      // Ajouter des données supplémentaires selon le type d'avis
+      if (reviewType === 'category') {
+        reviewData.categoryType = categoryType;
+      } else if (reviewType === 'product') {
+        reviewData.productId = productId;
+      }
+      
+      let result;
+      
+      if (isEditing && userReview) {
+        // Mise à jour d'un avis existant
+        result = await updateReview(userReview.id, reviewData);
+      } else {
+        // Création d'un nouvel avis
+        result = await addReview(reviewData);
+      }
+      
+      if (result.success) {
+        // Rafraîchir la liste des avis
+        const updatedReviews = await getAllReviews();
+        if (updatedReviews.success) {
+          setReviews(updatedReviews.reviews);
+        }
+        
+        setShowAddReview(false);
+        setIsEditing(false);
+        
+        // Réinitialiser le formulaire
+        setNewReview({
+          rating: 5,
+          title: '',
+          comment: ''
+        });
+      } else {
+        setError(result.error || "Erreur lors de la soumission de l'avis");
+      }
+    } catch (error) {
+      console.error('Erreur:', error);
+      setError('Une erreur est survenue');
+    }
+    
+    setReviewLoading(false);
+  };
+
+  // Supprimer un avis
+  const handleDeleteReview = async () => {
+    if (!userReview) return;
+    
+    if (!window.confirm('Êtes-vous sûr de vouloir supprimer votre avis ?')) {
+      return;
+    }
+    
+    setReviewLoading(true);
+    
+    try {
+      const result = await deleteReview(userReview.id);
+      
+      if (result.success) {
+        // Rafraîchir la liste des avis
+        const updatedReviews = await getAllReviews();
+        if (updatedReviews.success) {
+          setReviews(updatedReviews.reviews);
+        }
+        
+        setUserReview(null);
+        setIsEditing(false);
+        setShowAddReview(false);
+        
+        // Réinitialiser le formulaire
+        setNewReview({
+          rating: 5,
+          title: '',
+          comment: ''
+        });
+      } else {
+        setError(result.error || 'Erreur lors de la suppression de l\'avis');
+      }
+    } catch (error) {
+      console.error('Erreur:', error);
+      setError('Une erreur est survenue');
+    }
+    
+    setReviewLoading(false);
+  };
+
   // Obtenir le type d'avis en français
   const getReviewTypeText = (reviewType, categoryType = null) => {
     if (reviewType === 'product') return 'Produit';
@@ -147,6 +372,7 @@ const AllReviewsPage = () => {
             Chargement des avis...
           </div>
         </div>
+        <Footer />
       </div>
     );
   }
@@ -203,6 +429,23 @@ const AllReviewsPage = () => {
                   transition: 'transform 0.3s ease'
                 }} 
               />
+            </button>
+            <button
+              onClick={handleAddReviewClick}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                padding: '0.8rem 1rem',
+                backgroundColor: 'var(--primary-color)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer'
+              }}
+            >
+              <Plus size={18} />
+              Ajouter un avis
             </button>
           </div>
 
@@ -321,6 +564,156 @@ const AllReviewsPage = () => {
             </div>
           )}
         </div>
+
+        {/* Formulaire d'ajout ou de modification d'avis */}
+        {showAddReview && (
+          <div className="review-form-container">
+            <h3>{isEditing ? 'Modifier votre avis' : 'Ajouter un avis'}</h3>
+            
+            {error && <div className="error-alert">{error}</div>}
+            
+            <form className="review-form" onSubmit={handleSubmitReview}>
+              {!isEditing && (
+                <div className="form-group">
+                  <label>Type d'avis</label>
+                  <select 
+                    value={reviewType}
+                    onChange={(e) => {
+                      setReviewType(e.target.value);
+                      checkExistingReview();
+                    }}
+                    style={{
+                      padding: '0.8rem',
+                      borderRadius: '8px',
+                      border: '1px solid #ddd',
+                      width: '100%'
+                    }}
+                  >
+                    <option value="global">Avis global sur le site</option>
+                    <option value="category">Avis sur une catégorie</option>
+                    <option value="product">Avis sur un produit</option>
+                  </select>
+                </div>
+              )}
+              
+              {reviewType === 'category' && !isEditing && (
+                <div className="form-group">
+                  <label>Catégorie</label>
+                  <select 
+                    value={categoryType}
+                    onChange={(e) => {
+                      setCategoryType(e.target.value);
+                      checkExistingReview();
+                    }}
+                    style={{
+                      padding: '0.8rem',
+                      borderRadius: '8px',
+                      border: '1px solid #ddd',
+                      width: '100%'
+                    }}
+                  >
+                    <option value="gaming">Gaming</option>
+                    <option value="retro">Retro</option>
+                    <option value="tcg">TCG</option>
+                    <option value="goodies">Goodies</option>
+                  </select>
+                </div>
+              )}
+              
+              {reviewType === 'product' && !isEditing && (
+                <div className="form-group">
+                  <label>ID du produit</label>
+                  <input
+                    type="text"
+                    value={productId}
+                    onChange={(e) => {
+                      setProductId(e.target.value);
+                      checkExistingReview();
+                    }}
+                    placeholder="Entrez l'ID du produit"
+                    style={{
+                      padding: '0.8rem',
+                      borderRadius: '8px',
+                      border: '1px solid #ddd',
+                      width: '100%'
+                    }}
+                    required
+                  />
+                  <small style={{ color: '#666', marginTop: '0.5rem', display: 'block' }}>
+                    Vous pouvez trouver l'ID du produit dans l'URL de sa page (ex: /product/abc123)
+                  </small>
+                </div>
+              )}
+              
+              <div className="form-group">
+                <label>Votre note</label>
+                {renderRatingInput()}
+              </div>
+              
+              <div className="form-group">
+                <label htmlFor="title">Titre de l'avis</label>
+                <input
+                  type="text"
+                  id="title"
+                  value={newReview.title}
+                  onChange={(e) => setNewReview({ ...newReview, title: e.target.value })}
+                  placeholder="Résumez votre expérience en quelques mots"
+                  maxLength={100}
+                  required
+                />
+              </div>
+              
+              <div className="form-group">
+                <label htmlFor="comment">Détails de l'avis</label>
+                <textarea
+                  id="comment"
+                  value={newReview.comment}
+                  onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
+                  placeholder="Partagez votre expérience..."
+                  rows={5}
+                  maxLength={1000}
+                  required
+                ></textarea>
+              </div>
+              
+              <div className="form-actions">
+                <button 
+                  type="button" 
+                  className="cancel-button"
+                  onClick={() => {
+                    setShowAddReview(false);
+                    setIsEditing(false);
+                    setError('');
+                  }}
+                >
+                  Annuler
+                </button>
+                
+                <button 
+                  type="submit" 
+                  className="submit-button"
+                  disabled={reviewLoading}
+                >
+                  {reviewLoading 
+                    ? 'Envoi en cours...' 
+                    : (isEditing ? 'Mettre à jour' : 'Publier l\'avis')
+                  }
+                </button>
+                
+                {isEditing && (
+                  <button 
+                    type="button" 
+                    className="delete-button"
+                    onClick={handleDeleteReview}
+                    disabled={reviewLoading}
+                  >
+                    Supprimer
+                  </button>
+                )}
+              </div>
+            </form>
+          </div>
+        )}
 
         {/* Affichage des erreurs */}
         {error && (
