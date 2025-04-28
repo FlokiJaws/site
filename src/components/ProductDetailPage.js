@@ -5,7 +5,6 @@ import { getProductById } from '../firebase/products';
 import { addToCart } from '../firebase/cart';
 import { useAuth } from '../contexts/AuthContext';
 import Navbar from './Navbar';
-import ProductReviewsSection from './ProductReviewsSection';
 import './ProductDetailPage.css';
 
 const ProductDetailPage = () => {
@@ -321,8 +320,6 @@ const ProductDetailPage = () => {
           </div>
         </div>
         
-        {/* Section des avis */}
-        <ProductReviewsSection product={product} />
       </div>
     </>
   );
