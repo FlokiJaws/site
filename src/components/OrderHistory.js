@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import Navbar from './Navbar';
 import { useAuth } from '../contexts/AuthContext';
 import { getUserOrderHistory } from '../firebase/checkout';
-import { getUserProductReview } from '../firebase/reviews';
+import { getUserGlobalReview } from '../firebase/reviews';
 import { Package, ChevronDown, ChevronUp } from 'lucide-react';
 import './OrderHistory.css';
 
@@ -59,7 +59,7 @@ const OrderHistory = () => {
         if (order.status === 'delivered') {
           for (const item of order.items) {
             // Vérifier si l'utilisateur a déjà évalué ce produit
-            const result = await getUserProductReview(currentUser.uid, item.productId);
+            const result = await getUserGlobalReview(currentUser.uid, item.productId);
             if (result.success) {
               reviewedProductsMap[item.productId] = result.review ? true : false;
             }

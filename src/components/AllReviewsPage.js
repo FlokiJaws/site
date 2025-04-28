@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from './Navbar';
-import Footer from './Footer';
+import Footer from './EnhancedFooter';
 import { Star, StarHalf, ArrowLeft, Search, Plus, AlertTriangle } from 'lucide-react';
 import { getGlobalReviews, getUserGlobalReview, addReview, updateReview, deleteReview } from '../firebase/reviews';
 import './AllReviewsPage.css';
